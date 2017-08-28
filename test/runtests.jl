@@ -24,7 +24,7 @@ df = Bedgraph.read(file)
 @test df[:dataValue] == dataValue
 
 # Expansion and compression test.
-(n, expanded_dataValue) = Bedgraph.expand(df[:chromStart], df[:chromEnd], df[:dataValue])
+(n, expanded_dataValue) = Bedgraph.expand(chromStart, chromEnd, dataValue)
 
 (compressed_chromStart,compressed_chromEnd,compressed_dataValue) = Bedgraph.compress(n,expanded_dataValue)
 
