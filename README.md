@@ -10,7 +10,7 @@
 ## Overview
 This package provides read and write support for [Bedgraph files](https://genome.ucsc.edu/goldenPath/help/bedgraph.html), as well as other useful utilities.
 
-Note: this package does not currently handle bedGraph meta data such as the track definition or browser lines.
+> **Note:**  this package does not currently handle bedGraph meta data such as the track definition or browser lines.
 
 ## Installation
 Use Pkg.add("Bedgraph") in Julia to install Bedgraph.jl and its dependencies.
