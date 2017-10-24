@@ -7,10 +7,12 @@
 [![codecov.io](http://codecov.io/github/CiaranOMara/Bedgraph.jl/coverage.svg?branch=master)](http://codecov.io/github/CiaranOMara/Bedgraph.jl?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/CiaranOMara/Bedgraph.jl/badge.svg?branch=master)](https://coveralls.io/github/CiaranOMara/Bedgraph.jl?branch=master)
 
+> This project will try to follow the [semver](http://semver.org) pro forma.
+
 ## Overview
 This package provides read and write support for [Bedgraph files](https://genome.ucsc.edu/goldenPath/help/bedgraph.html), as well as other useful utilities.
 
-Note: this package does not currently handle bedGraph meta data such as the track definition or browser lines.
+> **Note:**  this package does not currently handle bedGraph meta data such as the track definition or browser lines.
 
 ## Installation
 Use Pkg.add("Bedgraph") in Julia to install Bedgraph.jl and its dependencies.
