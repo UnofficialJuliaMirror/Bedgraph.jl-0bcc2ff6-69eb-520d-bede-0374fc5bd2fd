@@ -22,6 +22,8 @@ const line7 = "chr19 49302000 49302300 -1.0    " # tab at end.
 
 const cells1 = ["chr19", "49302000", "49302300", "-1.0"] :: Vector{String}
 
+const track1 = Track("chr19", 49302000, 49302300, -1.0)
+
 const parameter_line = "track type=bedGraph"
 const parameter_line_short = "track type=bedGraph name=track_label description=center_label"
 const parameter_line_long = "track type=bedGraph name=track_label description=center_label visibility=display_mode color=r,g,b altColor=r,g,b priority=priority autoScale=on|off alwaysZero=on|off gridDefault=on|off maxHeightPixels=max:default:min graphType=bar|points viewLimits=lower:upper yLineMark=real-value yLineOnOff=on|off windowingFunction=maximum|mean|minimum smoothingWindow=off|2-16"

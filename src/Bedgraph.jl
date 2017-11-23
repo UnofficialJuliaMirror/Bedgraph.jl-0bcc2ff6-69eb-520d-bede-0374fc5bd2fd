@@ -2,6 +2,8 @@ module Bedgraph
 using DataFrames
 # using DataArrays
 
+export Track
+
 # Orthogonality.
 chrom(c::Array{String,1}) = c
 chrom(c::SubString{String}) = string(c)
@@ -12,6 +14,13 @@ nucleotides(n::UnitRange{Int}) = collect(n) #Note: to me it feels unreasonable t
 nucleotides(n::DataArrays.DataArray{Any,1}) = convert(Array{Int,1}, n)
 dataValues(v::DataArrays.DataArray{Any,1}) = convert(Array{Float64,1}, v)
 
+
+struct Track
+    chrom::String
+    chromstart::Int
+    chromend::Int
+    dataValue::Real
+end
 # Check if the track data in four column BED format.
 function isLikeTrack(line::String) :: Bool
     return  ismatch(r"^\s*([A-Za-z]+\S*)\s+(\d+)\s+(\d+)\s+(\S*\d)\s*$", line) # Note: is like a Track.
