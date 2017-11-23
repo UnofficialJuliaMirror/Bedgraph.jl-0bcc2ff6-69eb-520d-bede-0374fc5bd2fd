@@ -7,12 +7,12 @@ export Track
 # Orthogonality.
 chrom(c::Vector{String}) = c
 chrom(c::SubString{String}) = string(c)
-chrom(c::Array{Any,1}) = convert(Vector{String}, c)
+chrom(c::Vector{Any}) = convert(Vector{String}, c)
 chrom(c::DataArrays.DataArray{Any,1}) = chrom(dropna(c))
-nucleotides(n::Array{Int,1}) = n
+nucleotides(n::Vector{Int}) = n
 nucleotides(n::UnitRange{Int}) = collect(n) #Note: to me it feels unreasonable to collect a range.
-nucleotides(n::DataArrays.DataArray{Any,1}) = convert(Array{Int,1}, n)
-dataValues(v::DataArrays.DataArray{Any,1}) = convert(Array{Float64,1}, v)
+nucleotides(n::DataArrays.DataArray{Any,1}) = convert(Vector{Int}, n)
+dataValues(v::DataArrays.DataArray{Any,1}) = convert(Vector{T}, v) where {T<:Real}
 
 
 struct Track
@@ -120,12 +120,12 @@ function read(file::AbstractString, sink=DataFrame)
     return sink
 end
 
-function compress(n::Array{Int,1}, v::Array{Float64,1})
+function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real}
 
     # chrom::Vector{String} = []
-    chromStart::Array{Int,1} = []
-    chromEnd::Array{Int,1} = []
-    dataValue::Array{Float64,1} = []
+    chromStart::Vector{Int} = []
+    chromEnd::Vector{Int} = []
+    dataValue::Vector{Real} = []
 
     # Start inital track.
     # push!(chrom, c[1])
@@ -170,7 +170,7 @@ end
 
 compress(n, v) =  compress(nucleotides(n), v)
 
-function expand(chromStart::Array{Int,1}, chromEnd::Array{Int,1}, dataValue::Array{Float64,1})
+function expand(chromStart::Vector{Int}, chromEnd::Vector{Int}, dataValue::Vector{T}) where {T<:Real}
 
     # Check that array are of equal length.
     if length(chromStart) != length(chromEnd) || length(chromEnd) != length(dataValue)
@@ -203,7 +203,7 @@ end
 expand(chromStart::DataArrays.DataArray{Any,1}, chromEnd::DataArrays.DataArray{Any,1}, dataValue::DataArrays.DataArray{Any,1}) = expand(nucleotides(chromStart), nucleotides(chromEnd), dataValues(dataValue))
 
 # chrom  chromStart  chromEnd  dataValue
-function write(chrom::Vector{String}, chromStart::Array{Int,1}, chromEnd::Array{Int,1}, dataValue::Array{Float64,1} ; outfile="out.bedgraph")
+function write(chrom::Vector{String}, chromStart::Vector{Int}, chromEnd::Vector{Int}, dataValue::Vector{T} ; outfile="out.bedgraph") where {T<:Real}
 
     # Check that array are of equal length.
     if length(chrom) != length(chromStart) || length(chromEnd) != length(dataValue) || length(chrom) != length(dataValue)
