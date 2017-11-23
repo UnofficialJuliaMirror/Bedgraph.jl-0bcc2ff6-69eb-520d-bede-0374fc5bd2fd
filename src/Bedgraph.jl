@@ -5,9 +5,9 @@ using DataFrames
 export Track
 
 # Orthogonality.
-chrom(c::Array{String,1}) = c
+chrom(c::Vector{String}) = c
 chrom(c::SubString{String}) = string(c)
-chrom(c::Array{Any,1}) = convert(Array{String,1}, c)
+chrom(c::Array{Any,1}) = convert(Vector{String}, c)
 chrom(c::DataArrays.DataArray{Any,1}) = chrom(dropna(c))
 nucleotides(n::Array{Int,1}) = n
 nucleotides(n::UnitRange{Int}) = collect(n) #Note: to me it feels unreasonable to collect a range.
@@ -68,7 +68,7 @@ function readParameters(io) :: String
     end
 end
 
-function parseLine(line::String) ::Array{String,1}
+function parseLine(line::String) ::Vector{String}
     cells::Vector{String} = filter!(!isempty, split(line, r"\s"))
 
     length(cells) == 4 || error("Poor line formatting:", cells)
@@ -76,8 +76,8 @@ function parseLine(line::String) ::Array{String,1}
     return cells
 end
 
-function convertCells(cells::Array{String,1})
     return (cells[1], parse(Int, cells[2]), parse(Int, cells[3]), parse(Float64, cells[4])) #TODO: parse cell 4 as a generic Real.
+function convertCells(cells::Vector{String})
 end
 
 function read(file::AbstractString, sink=DataFrame)
@@ -96,7 +96,7 @@ end
 
 function compress(n::Array{Int,1}, v::Array{Float64,1})
 
-    # chrom::Array{String,1} = []
+    # chrom::Vector{String} = []
     chromStart::Array{Int,1} = []
     chromEnd::Array{Int,1} = []
     dataValue::Array{Float64,1} = []
@@ -177,7 +177,7 @@ end
 expand(chromStart::DataArrays.DataArray{Any,1}, chromEnd::DataArrays.DataArray{Any,1}, dataValue::DataArrays.DataArray{Any,1}) = expand(nucleotides(chromStart), nucleotides(chromEnd), dataValues(dataValue))
 
 # chrom  chromStart  chromEnd  dataValue
-function write(chrom::Array{String,1}, chromStart::Array{Int,1}, chromEnd::Array{Int,1}, dataValue::Array{Float64,1} ; outfile="out.bedgraph")
+function write(chrom::Vector{String}, chromStart::Array{Int,1}, chromEnd::Array{Int,1}, dataValue::Array{Float64,1} ; outfile="out.bedgraph")
 
     # Check that array are of equal length.
     if length(chrom) != length(chromStart) || length(chromEnd) != length(dataValue) || length(chrom) != length(dataValue)
