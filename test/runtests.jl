@@ -13,6 +13,12 @@ file = joinpath(@__DIR__, "data.bedgraph")
 
 @test isfile(file)
 
+open(file, "r") do io
+    Bedgraph.seekNextTrack(io)
+    @test position(io) == 532
+    @test readline(io) == "chr19 49302000 49302300 -1.0"
+end
+
 # Read test.
 df = Bedgraph.read(file)
 

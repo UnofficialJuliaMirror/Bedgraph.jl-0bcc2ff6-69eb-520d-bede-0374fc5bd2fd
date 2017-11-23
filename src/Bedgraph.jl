@@ -12,11 +12,36 @@ nucleotides(n::UnitRange{Int}) = collect(n) #Note: to me it feels unreasonable t
 nucleotides(n::DataArrays.DataArray{Any,1}) = convert(Array{Int,1}, n)
 dataValues(v::DataArrays.DataArray{Any,1}) = convert(Array{Float64,1}, v)
 
+# Check if the track data in four column BED format.
+function isLikeTrack(line::String) :: Bool
+    return  ismatch(r"^\s*([A-Za-z]+\S*)\s+(\d+)\s+(\d+)\s+(\S*\d)\s*$", line) # Note: is like a Track.
+end
+
+function seekNextTrack(io) :: Void
+    seekstart(io)
+
+    pos = position(io)
+    line = ""
+
+    while !eof(io) && !isLikeTrack(line)
+        pos = position(io)
+        line = readline(io,chomp=false)
+    end
+
+    seek(io, pos)
+
+    nothing
+
+end
+
 function read(file::AbstractString, sink=DataFrame)
     # sink = Data.stream!(Source(file), sink)
     # Data.close!(sink)
 
-    data = readdlm(file)
+    data = open(file, "r") do io
+        seekNextTrack(io)
+		return readdlm(io)
+	end
 
     sink = DataFrame(chrom=data[:,1], chromStart=data[:,2], chromEnd=data[:,3], dataValue=data[:,4])
 
