@@ -59,8 +59,14 @@ function readParameters(io) :: String
     end
 end
 
-function parseLine(line::String) :: Vector{String}
+function parseLine(line::String) ::Array{String,1}
     cells::Vector{String} = filter!(!isempty, split(line, r"\s"))
+
+    length(cells) == 4 || error("Poor line formatting:", cells)
+
+    return cells
+end
+
 end
 
 function read(file::AbstractString, sink=DataFrame)

@@ -105,6 +105,7 @@ end #testset
 @test Bedgraph.parseLine(line6) == cells1
 @test Bedgraph.parseLine(line7) == cells1
 
+@test_throws MethodError Bedgraph.parseLine(String(line1, ' ',"extra_cell")) == cells1
 
 end #testset
 
