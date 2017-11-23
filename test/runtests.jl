@@ -27,6 +27,7 @@ const parameter_line_short = "track type=bedGraph name=track_label description=c
 const parameter_line_long = "track type=bedGraph name=track_label description=center_label visibility=display_mode color=r,g,b altColor=r,g,b priority=priority autoScale=on|off alwaysZero=on|off gridDefault=on|off maxHeightPixels=max:default:min graphType=bar|points viewLimits=lower:upper yLineMark=real-value yLineOnOff=on|off windowingFunction=maximum|mean|minimum smoothingWindow=off|2-16"
 
 const file = joinpath(@__DIR__, "data.bedgraph")
+const file_headerless = joinpath(@__DIR__, "data-headerless.bedgraph")
 
 
 @testset "I/O" begin
@@ -40,6 +41,12 @@ open(file, "r") do io
     @test readline(io) == "chr19 49302000 49302300 -1.0"
 end
 
+# Check things for headerless files.
+open(file_headerless, "r") do io
+    Bedgraph.seekNextTrack(io)
+    @test position(io) == 0
+    @test readline(io) == "chr19 49302000 49302300 -1.0"
+end
 
 # Read test.
 df = Bedgraph.read(file)
