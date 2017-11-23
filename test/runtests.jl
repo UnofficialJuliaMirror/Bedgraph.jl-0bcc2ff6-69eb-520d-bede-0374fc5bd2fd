@@ -109,7 +109,7 @@ end #testset
 @test Bedgraph.parseLine(line1_6) == cells1
 @test Bedgraph.parseLine(line1_7) == cells1
 
-@test_throws MethodError Bedgraph.parseLine(String(line1, ' ',"extra_cell")) == cells1
+@test_throws ErrorException Bedgraph.convertCells([cells1; "extra_cell"]) == cells1
 
 (c1, c2, c3, c4) = Bedgraph.convertCells(Bedgraph.parseLine(line1))
 

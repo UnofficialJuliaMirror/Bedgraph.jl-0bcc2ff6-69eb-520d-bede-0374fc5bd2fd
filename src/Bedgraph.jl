@@ -70,14 +70,15 @@ end
 
 function parseLine(line::String) ::Vector{String}
     cells::Vector{String} = filter!(!isempty, split(line, r"\s"))
-
-    length(cells) == 4 || error("Poor line formatting:", cells)
-
-    return cells
 end
 
-    return (cells[1], parse(Int, cells[2]), parse(Int, cells[3]), parse(Float64, cells[4])) #TODO: parse cell 4 as a generic Real.
 function convertCells(cells::Vector{String})
+    length(cells) == 4 || error("Poor line formatting:", cells)
+    return cells[1], parse(Int, cells[2]), parse(Int, cells[3]), parse(Float64, cells[4]) #TODO: parse cell 4 as a generic Real.
+end
+
+function parseCells(chrom::String, chromStart::Int, chromEnd::Int, dataValue::Real)
+    Track(chrom::String, chromStart::Int, chromEnd::Int, dataValue::Real)
 end
 
 function read(file::AbstractString, sink=DataFrame)
