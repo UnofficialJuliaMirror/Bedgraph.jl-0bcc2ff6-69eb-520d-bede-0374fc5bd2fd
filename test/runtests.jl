@@ -13,12 +13,14 @@ const comment = "#	300 base wide bar graph, autoScale is on by default == graphi
 const browser = "browser position chr19:49302001-49304701"
 
 const line1 = "chr19 49302000 49302300 -1.0" # space separated.
-const line2 = "chr19   49302000    49302300    -1.0" # tab separated.
-const line3 = "chr19  49302000     49302300        -1.0" # mix of tabs and spaces.
-const line4 = " chr19 49302000 49302300 -1.0" # space at start.
-const line5 = "    chr19 49302000 49302300 -1.0" # tab at start.
-const line6 = "chr19 49302000 49302300 -1.0 " # space at end.
-const line7 = "chr19 49302000 49302300 -1.0    " # tab at end.
+
+# Varaiations of line 1.
+const line1_2 = "chr19   49302000    49302300    -1.0" # tab separated.
+const line1_3 = "chr19  49302000     49302300        -1.0" # mix of tabs and spaces.
+const line1_4 = " chr19 49302000 49302300 -1.0" # space at start.
+const line1_5 = "    chr19 49302000 49302300 -1.0" # tab at start.
+const line1_6 = "chr19 49302000 49302300 -1.0 " # space at end.
+const line1_7 = "chr19 49302000 49302300 -1.0    " # tab at end.
 
 const cells1 = ["chr19", "49302000", "49302300", "-1.0"] :: Vector{String}
 
@@ -40,14 +42,14 @@ const file_headerless = joinpath(@__DIR__, "data-headerless.bedgraph")
 open(file, "r") do io
     Bedgraph.seekNextTrack(io)
     @test position(io) == 532
-    @test readline(io) == "chr19 49302000 49302300 -1.0"
+    @test readline(io) == line1
 end
 
 # Check things for headerless files.
 open(file_headerless, "r") do io
     Bedgraph.seekNextTrack(io)
     @test position(io) == 0
-    @test readline(io) == "chr19 49302000 49302300 -1.0"
+    @test readline(io) == line1
 end
 
 # Read test.
@@ -87,12 +89,12 @@ end #testset
 @test Bedgraph.isLikeTrack(parameter_line_short) == false
 @test Bedgraph.isLikeTrack(parameter_line_long) == false
 @test Bedgraph.isLikeTrack(line1) == true
-@test Bedgraph.isLikeTrack(line2) == true
-@test Bedgraph.isLikeTrack(line3) == true
-@test Bedgraph.isLikeTrack(line4) == true
-@test Bedgraph.isLikeTrack(line5) == true
-@test Bedgraph.isLikeTrack(line6) == true
-@test Bedgraph.isLikeTrack(line7) == true
+@test Bedgraph.isLikeTrack(line1_2) == true
+@test Bedgraph.isLikeTrack(line1_3) == true
+@test Bedgraph.isLikeTrack(line1_4) == true
+@test Bedgraph.isLikeTrack(line1_5) == true
+@test Bedgraph.isLikeTrack(line1_6) == true
+@test Bedgraph.isLikeTrack(line1_7) == true
 
 end #testset
 
@@ -100,12 +102,12 @@ end #testset
 @testset "Parsing" begin
 
 @test Bedgraph.parseLine(line1) == cells1
-@test Bedgraph.parseLine(line2) == cells1
-@test Bedgraph.parseLine(line3) == cells1
-@test Bedgraph.parseLine(line4) == cells1
-@test Bedgraph.parseLine(line5) == cells1
-@test Bedgraph.parseLine(line6) == cells1
-@test Bedgraph.parseLine(line7) == cells1
+@test Bedgraph.parseLine(line1_2) == cells1
+@test Bedgraph.parseLine(line1_3) == cells1
+@test Bedgraph.parseLine(line1_4) == cells1
+@test Bedgraph.parseLine(line1_5) == cells1
+@test Bedgraph.parseLine(line1_6) == cells1
+@test Bedgraph.parseLine(line1_7) == cells1
 
 @test_throws MethodError Bedgraph.parseLine(String(line1, ' ',"extra_cell")) == cells1
 
