@@ -17,10 +17,35 @@ dataValues(v::DataArrays.DataArray{Any,1}) = convert(Array{Float64,1}, v)
 
 struct Track
     chrom::String
-    chromstart::Int
-    chromend::Int
-    dataValue::Real
+    chrom_start::Int
+    chrom_end::Int
+    data_value::Real
 end
+
+function Base.:(==)(a::Track, b::Track)
+    return a.chrom  == b.chrom &&
+           a.chrom_start == b.chrom_start &&
+           a.chrom_end == b.chrom_end &&
+           a.data_value == b.data_value
+end
+function Track(data::Vector{String})
+    return convert(Track, data)
+end
+
+function Base.convert(::Type{Track}, data::Vector{String})
+    c1, c2, c3, c4 = convertCells(data)
+    return Track(c1, c2, c3, c4)
+end
+
+function Track(data::String)
+    return convert(Track, data)
+end
+
+function Base.convert(::Type{Track}, str::String)
+    data = parseLine(str)
+    return convert(Track, data)
+end
+
 # Check if the track data in four column BED format.
 function isLikeTrack(line::String) :: Bool
     return  ismatch(r"^\s*([A-Za-z]+\S*)\s+(\d+)\s+(\d+)\s+(\S*\d)\s*$", line) # Note: is like a Track.

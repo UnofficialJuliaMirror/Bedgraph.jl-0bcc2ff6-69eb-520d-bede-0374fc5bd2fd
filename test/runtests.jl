@@ -109,15 +109,6 @@ end #testset
 @test Bedgraph.parseLine(line1_6) == cells1
 @test Bedgraph.parseLine(line1_7) == cells1
 
-@test_throws ErrorException Bedgraph.convertCells([cells1; "extra_cell"]) == cells1
-
-(c1, c2, c3, c4) = Bedgraph.convertCells(Bedgraph.parseLine(line1))
-
-@test typeof(c1) == String
-@test typeof(c2) <: Int
-@test typeof(c3) <: Int
-@test typeof(c4) <: Real
-
 end #testset
 
 
@@ -134,5 +125,26 @@ end #testset
 
 end #testset
 
+@testset "Conversion" begin
+
+@test_throws ErrorException Bedgraph.convertCells([cells1; "extra_cell"]) == cells1
+
+c1, c2, c3, c4 = Bedgraph.convertCells(Bedgraph.parseLine(line1))
+
+@test typeof(c1) == String
+@test typeof(c2) <: Int
+@test typeof(c3) <: Int
+@test typeof(c4) <: Real
+
+@test Track(line1) == track1
+@test convert(Track, line1) == track1
+
+@test Track(cells1) == track1
+@test convert(Track, cells1) == track1
+
+@test_throws MethodError convert(Track, String(line1, " ", "extra_cell")) #TODO: determine difference between MethodError and ErrorException.
+@test_throws ErrorException convert(Track, [cells1; "extra_cell"])
+
+end #testset
 
 end # total testset
