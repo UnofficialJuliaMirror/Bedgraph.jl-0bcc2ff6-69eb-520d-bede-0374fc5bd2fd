@@ -107,6 +107,13 @@ end #testset
 
 @test_throws MethodError Bedgraph.parseLine(String(line1, ' ',"extra_cell")) == cells1
 
+(c1, c2, c3, c4) = Bedgraph.convertCells(Bedgraph.parseLine(line1))
+
+@test typeof(c1) == String
+@test typeof(c2) <: Int
+@test typeof(c3) <: Int
+@test typeof(c4) <: Real
+
 end #testset
 
 

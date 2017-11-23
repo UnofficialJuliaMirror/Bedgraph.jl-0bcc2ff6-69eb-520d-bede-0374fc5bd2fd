@@ -67,6 +67,8 @@ function parseLine(line::String) ::Array{String,1}
     return cells
 end
 
+function convertCells(cells::Array{String,1})
+    return (cells[1], parse(Int, cells[2]), parse(Int, cells[3]), parse(Float64, cells[4])) #TODO: parse cell 4 as a generic Real.
 end
 
 function read(file::AbstractString, sink=DataFrame)
