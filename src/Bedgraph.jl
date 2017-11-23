@@ -17,6 +17,15 @@ function isLikeTrack(line::String) :: Bool
     return  ismatch(r"^\s*([A-Za-z]+\S*)\s+(\d+)\s+(\d+)\s+(\S*\d)\s*$", line) # Note: is like a Track.
 end
 
+function isBrowser(line::String) :: Bool
+    return  ismatch(r"^browser", lowercase(line))
+end
+
+function isComment(line::String) :: Bool
+    return ismatch(r"^\s*(?:#|$)", line)
+end
+
+#
 function seekNextTrack(io) :: Void
     seekstart(io)
 
@@ -32,6 +41,26 @@ function seekNextTrack(io) :: Void
 
     nothing
 
+end
+
+# Note: all options are placed in a single line separated by spaces.
+function readParameters(io) :: String
+    seekstart(io)
+
+    pos = position(io)
+
+    while !eof(io) && !isLikeTrack(line) # Note: regex is used to limit the search by exiting the loop when a line matches the bedGraph track format.
+        line = readline(io,chomp=false)
+
+        if contains(line, "type=bedGraph") # Note: the track type is REQUIRED, and must be bedGraph.
+            return line
+        end
+
+    end
+end
+
+function parseLine(line::String) :: Vector{String}
+    cells::Vector{String} = filter!(!isempty, split(line, r"\s"))
 end
 
 function read(file::AbstractString, sink=DataFrame)
