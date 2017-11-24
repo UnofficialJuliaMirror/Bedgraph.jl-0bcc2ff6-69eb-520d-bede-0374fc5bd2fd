@@ -51,6 +51,7 @@ const parameter_line_long = "track type=bedGraph name=track_label description=ce
 const file = joinpath(@__DIR__, "data.bedgraph")
 const file_headerless = joinpath(@__DIR__, "data-headerless.bedgraph")
 
+const tracks = [Track(track1), Track(line2), Track(line3), Track(line4), Track(line5), Track(line6), Track(line7), Track(line8), Track(line9)]
 
 @testset "I/O" begin
 
@@ -69,8 +70,6 @@ open(file_headerless, "r") do io
     @test position(io) == 0
     @test readline(io) == line1
 end
-
-tracks = [Track(track1), Track(line2), Track(line3), Track(line4), Track(line5), Track(line6), Track(line7), Track(line8), Track(line9)]
 
 open(file, "r") do io # Note: reading tracks first to check seek.
     @test Bedgraph.readTracks(io) ==  tracks
@@ -175,6 +174,16 @@ c1, c2, c3, c4 = Bedgraph._convertCells(Bedgraph._parseLine(line1))
 
 @test_throws MethodError convert(Track, String(line1, " ", "extra_cell")) #TODO: determine difference between MethodError and ErrorException.
 @test_throws ErrorException convert(Track, [cells1; "extra_cell"])
+
+end #testset
+
+@testset "Internal Helpers" begin
+
+@test Bedgraph._range(track1) == track1.chrom_start : track1.chrom_end - 1
+@test Bedgraph._range(track1, right_open=false) == (track1.chrom_start + 1 ) : track1.chrom_end
+
+@test Bedgraph._range(tracks) == track1.chrom_start : Track(line9).chrom_end - 1
+@test Bedgraph._range(tracks, right_open=false) == track1.chrom_start + 1 : Track(line9).chrom_end
 
 end #testset
 

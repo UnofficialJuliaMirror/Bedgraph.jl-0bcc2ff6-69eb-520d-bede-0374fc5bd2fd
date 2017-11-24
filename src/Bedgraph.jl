@@ -265,4 +265,20 @@ function _convertCells(cells::Vector{String})
     return cells[1], parse(Int, cells[2]), parse(Int, cells[3]), parse(Float64, cells[4]) #TODO: parse cell 4 as a generic Real.
 end
 
+function _range(track::Track; right_open=true) :: UnitRange{Int}
+
+    pos_start = right_open ? track.chrom_start : track.chrom_start + 1
+    pos_end = right_open ? track.chrom_end - 1 : track.chrom_end
+
+    return pos_start : pos_end
+end
+
+function _range(tracks::Vector{Track}; right_open=true) :: UnitRange{Int}
+
+    pos_start = _range(tracks[1], right_open=right_open)[1]
+    pos_end = _range(tracks[end], right_open=right_open)[end]
+
+    return  pos_start : pos_end
+end
+
 end # module
