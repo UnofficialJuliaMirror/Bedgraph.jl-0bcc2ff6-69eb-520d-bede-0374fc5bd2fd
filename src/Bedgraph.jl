@@ -47,7 +47,23 @@ function Base.convert(::Type{Track}, str::String)
     return convert(Track, data)
 end
 
-# Check if the track data in four column BED format.
+function Base.convert(::Type{Vector{Track}}, chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}) where {T<:Real}
+
+    # Check that arrays are of equal length.
+    length(chroms) == length(chrom_starts) && length(chrom_ends) == length(data_values) && length(chroms) == length(data_values) || error("Unequal lengths: chroms=$(length(chroms)), chrom_starts=$(length(chrom_starts)), chrom_ends=$(length(chrom_ends)), data_values=$(length(data_values))")
+
+    N = length(chroms)
+
+    tracks = Vector{Track}(N)
+
+    for i in 1:N
+        tracks[i] = Track(chroms[i], chrom_starts[i], chrom_ends[i], data_values[i])
+    end
+
+    return tracks
+end
+
+# Check if the track data is in the four column BED format.
 function isLikeTrack(line::String) :: Bool
     return  ismatch(r"^\s*([A-Za-z]+\S*)\s+(\d+)\s+(\d+)\s+(\S*\d)\s*$", line) # Note: is like a Track.
 end

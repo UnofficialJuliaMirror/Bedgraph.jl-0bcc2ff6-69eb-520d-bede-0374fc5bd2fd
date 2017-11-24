@@ -162,6 +162,8 @@ c1, c2, c3, c4 = Bedgraph._convertCells(Bedgraph._parseLine(line1))
 @test_throws MethodError convert(Track, String(line1, " ", "extra_cell")) #TODO: determine difference between MethodError and ErrorException.
 @test_throws ErrorException convert(Track, [cells1; "extra_cell"])
 
+@test convert(Vector{Track}, chrom, chromStart, chromEnd, dataValue) == tracks
+
 end #testset
 
 @testset "Internal Helpers" begin
