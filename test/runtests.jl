@@ -51,6 +51,7 @@ const parameter_line_long = "track type=bedGraph name=track_label description=ce
 const file = joinpath(@__DIR__, "data.bedgraph")
 const file_headerless = joinpath(@__DIR__, "data-headerless.bedgraph")
 
+const header = [browser1, browser2, browser3, browser4, comment1, comment2, comment3, comment4, parameter_line]
 const tracks = [Track(track1), Track(line2), Track(line3), Track(line4), Track(line5), Track(line6), Track(line7), Track(line8), Track(line9)]
 
 @testset "I/O" begin
@@ -73,7 +74,7 @@ end
 
 open(file, "r") do io # Note: reading tracks first to check seek.
     @test Bedgraph.readTracks(io) ==  tracks
-    @test Bedgraph.readHeader(io) == [browser1, browser2, browser3, browser4, comment1, comment2, comment3, comment4, parameter_line]
+    @test Bedgraph.readHeader(io) == header
 end
 
 open(file_headerless, "r") do io # Note: reading tracks first to check seek.

@@ -304,6 +304,17 @@ expand(chromStart::DataArrays.DataArray{Any,1}, chromEnd::DataArrays.DataArray{A
 expand(chrom::String, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( fill(chrom, length(chrom_starts)), chrom_starts, chrom_ends, data_values, right_open=right_open, bump_forward=bump_forward)
 expand(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( convert(Vector{Track}, chroms, chrom_starts, chrom_ends, data_values), right_open=right_open, bump_forward=bump_forward)
 
+
+function generateBasicHeader(chrom::String, pos_start::Int, pos_end::Int; bump_forward=true) :: Vector{String}
+
+    if bump_forward
+        pos_start += 1
+        pos_end += 1
+    end
+
+    return ["browser position $chrom:$pos_start-$pos_end", "track type=bedGraph"]
+end
+
 # chrom  chromStart  chromEnd  dataValue
 function write(chrom::Vector{String}, chromStart::Vector{Int}, chromEnd::Vector{Int}, dataValue::Vector{T} ; outfile="out.bedgraph") where {T<:Real}
 
