@@ -20,6 +20,16 @@ const comment2 = "#	limits will dynamically change to always show full range of 
 const comment3 = "#	in viewing window, priority = 20 positions this as the second graph"
 const comment4 = "#	Note, zero-relative, half-open coordinate system in use for bedGraph format"
 
+# space separated lines.
+const line1 = "chr19 49302000 49302300 -1.0"
+const line2 = "chr19 49302300 49302600 -0.75"
+const line3 = "chr19 49302600 49302900 -0.50"
+const line4 = "chr19 49302900 49303200 -0.25"
+const line5 = "chr19 49303200 49303500 0.0"
+const line6 = "chr19 49303500 49303800 0.25"
+const line7 = "chr19 49303800 49304100 0.50"
+const line8 = "chr19 49304100 49304400 0.75"
+const line9 = "chr19 49304400 49304700 1.00"
 
 # Varaiations of line 1.
 const line1_2 = "chr19   49302000    49302300    -1.0" # tab separated.
@@ -58,6 +68,18 @@ open(file_headerless, "r") do io
     Bedgraph.seekNextTrack(io)
     @test position(io) == 0
     @test readline(io) == line1
+end
+
+tracks = [Track(track1), Track(line2), Track(line3), Track(line4), Track(line5), Track(line6), Track(line7), Track(line8), Track(line9)]
+
+open(file, "r") do io # Note: reading tracks first to check seek.
+    @test Bedgraph.readTracks(io) ==  tracks
+    @test Bedgraph.readHeader(io) == [browser1, browser2, browser3, browser4, comment1, comment2, comment3, comment4, parameter_line]
+end
+
+open(file_headerless, "r") do io # Note: reading tracks first to check seek.
+    @test Bedgraph.readTracks(io) == tracks
+    @test Bedgraph.readHeader(io) == []
 end
 
 # Read test.

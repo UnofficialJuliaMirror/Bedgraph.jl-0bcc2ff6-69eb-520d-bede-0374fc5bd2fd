@@ -108,6 +108,20 @@ function readHeader(io) :: Vector{String}
     return header
 
 end
+
+function readTracks(io) :: Vector{Track}
+    seekNextTrack(io)
+
+    tracks = Track[]
+
+    while !eof(io)
+        push!(tracks, Track(readline(io)))
+    end
+
+    return tracks
+
+end
+
 function read(file::AbstractString, sink=DataFrame)
     # sink = Data.stream!(Source(file), sink)
     # Data.close!(sink)
@@ -121,6 +135,8 @@ function read(file::AbstractString, sink=DataFrame)
 
     return sink
 end
+
+
 
 function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real}
 
