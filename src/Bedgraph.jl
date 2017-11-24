@@ -136,6 +136,51 @@ function read(file::AbstractString, sink=DataFrame)
     return sink
 end
 
+function compress(c::Vector{String}, n::Vector{Int}, v::Vector{<:Real}; right_open = true, bump_back=true) :: Vector{Track}
+
+    ranges = Vector{UnitRange{Int}}()
+    values = Vector{Float64}()
+    chroms = Vector{String}()
+
+    range_start = 1
+    push!(values, v[1])
+
+    for (index, value ) in enumerate(v)
+        if value != values[end]
+            push!(ranges, n[range_start] : n[index - 1] )
+            push!(values, value)
+            push!(chroms, c[index])
+            range_start = index
+        end
+
+        if index == length(v)
+            push!(ranges, n[range_start] : n[index] )
+            push!(values, value)
+            push!(chroms, c[index])
+        end
+    end
+
+    if right_open
+        for (index, value) in enumerate(ranges)
+            ranges[index] = first(value) : last(value) + 1
+        end
+    else
+        for (index, value) in enumerate(ranges)
+            ranges[index] = first(value) -1 : last(value)
+        end
+    end
+
+    new_tracks = Vector{Track}()
+
+    for (index, range) in enumerate(ranges)
+        new_track  = Track(chroms[index], first(range), last(range), values[index])
+        push!(new_tracks, new_track)
+    end
+
+    return bump_back ? _bumpBack(new_tracks) : new_tracks
+
+end
+compress(c::String, n::Vector{Int}, v::Vector{T}; right_open = true, bump_back=true) where {T<:Real} = compress(fill(c, length(n)), n, v, right_open = right_open, bump_back = bump_back)
 
 
 function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real}
@@ -187,6 +232,27 @@ function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real}
 end
 
 compress(n, v) =  compress(nucleotides(n), v)
+
+
+
+function expand(tracks::Vector{Track}; right_open=true, bump_forward=true)
+
+    #TODO: ensure tracks are sorted with no overlap.
+
+    if bump_forward
+        tracks =  _bumpForward(tracks)
+    end
+
+    total_range =_range(tracks, right_open = right_open)
+
+    values = Vector{Float64}(length(total_range))
+
+    for track in tracks
+        values[findin(total_range, _range(track, right_open = right_open))] = track.data_value
+    end
+
+    return collect(total_range), values
+end
 
 function expand(chromStart::Vector{Int}, chromEnd::Vector{Int}, dataValue::Vector{T}) where {T<:Real}
 

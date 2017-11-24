@@ -142,19 +142,6 @@ end #testset
 end #testset
 
 
-@testset "Utilities" begin
-
-# Expansion and compression test.
-(n, expanded_dataValue) = Bedgraph.expand(chromStart, chromEnd, dataValue)
-
-(compressed_chromStart,compressed_chromEnd,compressed_dataValue) = Bedgraph.compress(n,expanded_dataValue)
-
-@test chromStart == compressed_chromStart
-@test chromEnd == compressed_chromEnd
-@test dataValue == compressed_dataValue
-
-end #testset
-
 @testset "Conversion" begin
 
 @test_throws ErrorException Bedgraph._convertCells([cells1; "extra_cell"]) == cells1
@@ -196,6 +183,30 @@ bumped_tracks = Bedgraph._bumpBack(tracks)
 
 
 end #testset
+
+@testset "Utilities" begin
+
+# Original expansion and compression test.
+(n, expanded_dataValue) = Bedgraph.expand(chromStart, chromEnd, dataValue)
+
+(compressed_chromStart,compressed_chromEnd,compressed_dataValue) = Bedgraph.compress(n,expanded_dataValue)
+
+@test chromStart == compressed_chromStart
+@test chromEnd == compressed_chromEnd
+@test dataValue == compressed_dataValue
+
+
+# Expansion and compression test.
+n, expanded_dataValue = Bedgraph.expand(tracks, right_open=true)
+compressed_tracks = Bedgraph.compress("chr19", n, expanded_dataValue, right_open=true)
+@test compressed_tracks == tracks
+
+n, expanded_dataValue = Bedgraph.expand(tracks, right_open=false)
+compressed_tracks = Bedgraph.compress("chr19", n, expanded_dataValue, right_open=false)
+@test compressed_tracks == tracks
+
+
+
 end #testset
 
 end # total testset
