@@ -9,10 +9,17 @@ const chromStart = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 
 const chromEnd = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
 const dataValue = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
-const comment = "#	300 base wide bar graph, autoScale is on by default == graphing"
-const browser = "browser position chr19:49302001-49304701"
 
-const line1 = "chr19 49302000 49302300 -1.0" # space separated.
+const browser1 = "browser position chr19:49302001-49304701"
+const browser2 = "browser hide all"
+const browser3 = "browser pack refGene encodeRegions"
+const browser4 = "browser full altGraph"
+
+const comment1 = "#	300 base wide bar graph, autoScale is on by default == graphing"
+const comment2 = "#	limits will dynamically change to always show full range of data"
+const comment3 = "#	in viewing window, priority = 20 positions this as the second graph"
+const comment4 = "#	Note, zero-relative, half-open coordinate system in use for bedGraph format"
+
 
 # Varaiations of line 1.
 const line1_2 = "chr19   49302000    49302300    -1.0" # tab separated.
@@ -26,8 +33,9 @@ const cells1 = ["chr19", "49302000", "49302300", "-1.0"] :: Vector{String}
 
 const track1 = Track("chr19", 49302000, 49302300, -1.0)
 
-const parameter_line = "track type=bedGraph"
-const parameter_line_short = "track type=bedGraph name=track_label description=center_label"
+const parameter_line = "track type=bedGraph name=\"BedGraph Format\" description=\"BedGraph format\" visibility=full color=200,100,0 altColor=0,100,200 priority=20"
+const parameter_line_short = "track type=bedGraph"
+const parameter_line_4 = "track type=bedGraph name=track_label description=center_label"
 const parameter_line_long = "track type=bedGraph name=track_label description=center_label visibility=display_mode color=r,g,b altColor=r,g,b priority=priority autoScale=on|off alwaysZero=on|off gridDefault=on|off maxHeightPixels=max:default:min graphType=bar|points viewLimits=lower:upper yLineMark=real-value yLineOnOff=on|off windowingFunction=maximum|mean|minimum smoothingWindow=off|2-16"
 
 const file = joinpath(@__DIR__, "data.bedgraph")
@@ -81,11 +89,12 @@ end #testset
 
 @testset "Matching" begin
 
-@test Bedgraph.isComment(comment)
-@test Bedgraph.isBrowser(browser)
+@test Bedgraph.isComment(comment1)
+@test Bedgraph.isBrowser(browser3)
 
 @test Bedgraph.isLikeTrack("1 2 3 4") == false
 @test Bedgraph.isLikeTrack(parameter_line) == false
+@test Bedgraph.isLikeTrack(parameter_line_4) == false
 @test Bedgraph.isLikeTrack(parameter_line_short) == false
 @test Bedgraph.isLikeTrack(parameter_line_long) == false
 @test Bedgraph.isLikeTrack(line1) == true

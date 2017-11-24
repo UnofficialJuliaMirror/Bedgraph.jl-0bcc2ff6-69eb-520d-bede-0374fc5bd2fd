@@ -94,6 +94,20 @@ function readParameters(io) :: String
     end
 end
 
+function readHeader(io) :: Vector{String}
+    position(io) == 0 || seekstart(io)
+
+    header = String[]
+    line = readline(io)
+
+    while !eof(io) && !isLikeTrack(line) # TODO: seek more rebust check.
+        push!(header, line)
+        line = readline(io)
+    end
+
+    return header
+
+end
 function read(file::AbstractString, sink=DataFrame)
     # sink = Data.stream!(Source(file), sink)
     # Data.close!(sink)
