@@ -69,7 +69,7 @@ function seekNextTrack(io) :: Void
 
     while !eof(io) && !isLikeTrack(line)
         pos = position(io)
-        line = readline(io,chomp=false)
+        line = readline(io)
     end
 
     seek(io, pos)
@@ -85,7 +85,7 @@ function readParameters(io) :: String
     pos = position(io)
 
     while !eof(io) && !isLikeTrack(line) # Note: regex is used to limit the search by exiting the loop when a line matches the bedGraph track format.
-        line = readline(io,chomp=false)
+        line = readline(io)
 
         if contains(line, "type=bedGraph") # Note: the track type is REQUIRED, and must be bedGraph.
             return line
