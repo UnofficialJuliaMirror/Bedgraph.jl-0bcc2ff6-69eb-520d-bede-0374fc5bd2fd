@@ -101,13 +101,13 @@ end #testset
 
 @testset "Parsing" begin
 
-@test Bedgraph.parseLine(line1) == cells1
-@test Bedgraph.parseLine(line1_2) == cells1
-@test Bedgraph.parseLine(line1_3) == cells1
-@test Bedgraph.parseLine(line1_4) == cells1
-@test Bedgraph.parseLine(line1_5) == cells1
-@test Bedgraph.parseLine(line1_6) == cells1
-@test Bedgraph.parseLine(line1_7) == cells1
+@test Bedgraph._parseLine(line1) == cells1
+@test Bedgraph._parseLine(line1_2) == cells1
+@test Bedgraph._parseLine(line1_3) == cells1
+@test Bedgraph._parseLine(line1_4) == cells1
+@test Bedgraph._parseLine(line1_5) == cells1
+@test Bedgraph._parseLine(line1_6) == cells1
+@test Bedgraph._parseLine(line1_7) == cells1
 
 end #testset
 
@@ -127,9 +127,9 @@ end #testset
 
 @testset "Conversion" begin
 
-@test_throws ErrorException Bedgraph.convertCells([cells1; "extra_cell"]) == cells1
+@test_throws ErrorException Bedgraph._convertCells([cells1; "extra_cell"]) == cells1
 
-c1, c2, c3, c4 = Bedgraph.convertCells(Bedgraph.parseLine(line1))
+c1, c2, c3, c4 = Bedgraph._convertCells(Bedgraph._parseLine(line1))
 
 @test typeof(c1) == String
 @test typeof(c2) <: Int

@@ -28,12 +28,13 @@ function Base.:(==)(a::Track, b::Track)
            a.chrom_end == b.chrom_end &&
            a.data_value == b.data_value
 end
+
 function Track(data::Vector{String})
     return convert(Track, data)
 end
 
 function Base.convert(::Type{Track}, data::Vector{String})
-    c1, c2, c3, c4 = convertCells(data)
+    c1, c2, c3, c4 = _convertCells(data)
     return Track(c1, c2, c3, c4)
 end
 
@@ -42,7 +43,7 @@ function Track(data::String)
 end
 
 function Base.convert(::Type{Track}, str::String)
-    data = parseLine(str)
+    data = _parseLine(str)
     return convert(Track, data)
 end
 
@@ -91,19 +92,6 @@ function readParameters(io) :: String
         end
 
     end
-end
-
-function parseLine(line::String) ::Vector{String}
-    cells::Vector{String} = filter!(!isempty, split(line, r"\s"))
-end
-
-function convertCells(cells::Vector{String})
-    length(cells) == 4 || error("Poor line formatting:", cells)
-    return cells[1], parse(Int, cells[2]), parse(Int, cells[3]), parse(Float64, cells[4]) #TODO: parse cell 4 as a generic Real.
-end
-
-function parseCells(chrom::String, chromStart::Int, chromEnd::Int, dataValue::Real)
-    Track(chrom::String, chromStart::Int, chromEnd::Int, dataValue::Real)
 end
 
 function read(file::AbstractString, sink=DataFrame)
@@ -236,5 +224,15 @@ function write(chrom::Vector{String}, chromStart::Vector{Int}, chromEnd::Vector{
 end
 
 write(c, chromStart, chromEnd, dataValue; outfile="out.bedgraph" ) =  write(chrom(c), chromStart, chromEnd, dataValue; outfile="out.bedgraph")
+
+## Internal helper functions.
+function _parseLine(line::String) ::Vector{String}
+    cells::Vector{String} = filter!(!isempty, split(line, r"\s"))
+end
+
+function _convertCells(cells::Vector{String})
+    length(cells) == 4 || error("Poor line formatting:", cells)
+    return cells[1], parse(Int, cells[2]), parse(Int, cells[3]), parse(Float64, cells[4]) #TODO: parse cell 4 as a generic Real.
+end
 
 end # module
