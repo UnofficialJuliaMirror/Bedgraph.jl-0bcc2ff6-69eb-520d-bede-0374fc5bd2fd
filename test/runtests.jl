@@ -185,6 +185,17 @@ end #testset
 @test Bedgraph._range(tracks) == track1.chrom_start : Track(line9).chrom_end - 1
 @test Bedgraph._range(tracks, right_open=false) == track1.chrom_start + 1 : Track(line9).chrom_end
 
+
+bumped_tracks = Bedgraph._bumpForward(tracks)
+@test bumped_tracks[1].chrom_start == (tracks[1].chrom_start + 1)
+@test bumped_tracks[1].chrom_end == (tracks[1].chrom_end + 1)
+
+bumped_tracks = Bedgraph._bumpBack(tracks)
+@test bumped_tracks[1].chrom_start == (tracks[1].chrom_start - 1)
+@test bumped_tracks[1].chrom_end == (tracks[1].chrom_end - 1)
+
+
+end #testset
 end #testset
 
 end # total testset

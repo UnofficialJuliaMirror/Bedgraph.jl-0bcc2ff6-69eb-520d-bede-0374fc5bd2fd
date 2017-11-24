@@ -265,6 +265,21 @@ function _convertCells(cells::Vector{String})
     return cells[1], parse(Int, cells[2]), parse(Int, cells[3]), parse(Float64, cells[4]) #TODO: parse cell 4 as a generic Real.
 end
 
+
+function _bump(tracks::Vector{Track}, b::Int) :: Vector{Track}
+
+    new_tracks = Vector{Track}()
+
+    for track in tracks
+        new_track  = Track(track.chrom, track.chrom_start + b, track.chrom_end + b, track.data_value)
+        push!(new_tracks, new_track)
+    end
+
+    return new_tracks
+end
+_bumpForward(tracks::Vector{Track}) = _bump(tracks, 1)
+_bumpBack(tracks::Vector{Track}) = _bump(tracks, -1)
+
 function _range(track::Track; right_open=true) :: UnitRange{Int}
 
     pos_start = right_open ? track.chrom_start : track.chrom_start + 1
