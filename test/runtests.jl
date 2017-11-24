@@ -190,24 +190,25 @@ end #testset
 
 # Original expansion and compression test.
 (n, expanded_dataValue) = Bedgraph.expand(chromStart, chromEnd, dataValue)
-
 (compressed_chromStart,compressed_chromEnd,compressed_dataValue) = Bedgraph.compress(n,expanded_dataValue)
-
 @test chromStart == compressed_chromStart
 @test chromEnd == compressed_chromEnd
 @test dataValue == compressed_dataValue
-
 
 # Expansion and compression test.
 n, expanded_dataValue = Bedgraph.expand(tracks, right_open=true)
 compressed_tracks = Bedgraph.compress("chr19", n, expanded_dataValue, right_open=true)
 @test compressed_tracks == tracks
 
+# Expansion and compression of Tracks.
 n, expanded_dataValue = Bedgraph.expand(tracks, right_open=false)
 compressed_tracks = Bedgraph.compress("chr19", n, expanded_dataValue, right_open=false)
 @test compressed_tracks == tracks
 
-
+# Expansion and compression of Arrays via convert.
+n, expanded_dataValue = Bedgraph.expand("chr19", chromStart, chromEnd, dataValue)
+compressed_tracks = Bedgraph.compress("chr19", n, expanded_dataValue)
+@test compressed_tracks == tracks
 
 end #testset
 

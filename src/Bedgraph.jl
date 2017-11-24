@@ -199,7 +199,7 @@ end
 compress(c::String, n::Vector{Int}, v::Vector{T}; right_open = true, bump_back=true) where {T<:Real} = compress(fill(c, length(n)), n, v, right_open = right_open, bump_back = bump_back)
 
 
-function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real}
+function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real} #TODO: deprecate.
 
     # chrom::Vector{String} = []
     chromStart::Vector{Int} = []
@@ -270,7 +270,7 @@ function expand(tracks::Vector{Track}; right_open=true, bump_forward=true)
     return collect(total_range), values
 end
 
-function expand(chromStart::Vector{Int}, chromEnd::Vector{Int}, dataValue::Vector{T}) where {T<:Real}
+function expand(chromStart::Vector{Int}, chromEnd::Vector{Int}, dataValue::Vector{T}) where {T<:Real} #TODO: deprecate.
 
     # Check that array are of equal length.
     if length(chromStart) != length(chromEnd) || length(chromEnd) != length(dataValue)
@@ -301,6 +301,8 @@ function expand(chromStart::Vector{Int}, chromEnd::Vector{Int}, dataValue::Vecto
 end
 
 expand(chromStart::DataArrays.DataArray{Any,1}, chromEnd::DataArrays.DataArray{Any,1}, dataValue::DataArrays.DataArray{Any,1}) = expand(nucleotides(chromStart), nucleotides(chromEnd), dataValues(dataValue))
+expand(chrom::String, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( fill(chrom, length(chrom_starts)), chrom_starts, chrom_ends, data_values, right_open=right_open, bump_forward=bump_forward)
+expand(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( convert(Vector{Track}, chroms, chrom_starts, chrom_ends, data_values), right_open=right_open, bump_forward=bump_forward)
 
 # chrom  chromStart  chromEnd  dataValue
 function write(chrom::Vector{String}, chromStart::Vector{Int}, chromEnd::Vector{Int}, dataValue::Vector{T} ; outfile="out.bedgraph") where {T<:Real}
