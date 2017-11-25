@@ -4,10 +4,10 @@ using Base.Test
 
 @testset "Bedgraph" begin
 
-const chrom = ["chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19"]
-const chromStart = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
-const chromEnd = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
-const dataValue = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
+const chroms = ["chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19"]
+const chrom_starts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
+const chrom_ends = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
+const data_values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
 
 const browser1 = "browser position chr19:49302001-49304701"
@@ -87,16 +87,16 @@ df = Bedgraph.read(file)
 
 @test size(df) == (9,4)
 
-@test df[:chrom] == chrom
-@test df[:chromStart] == chromStart
-@test df[:chromEnd] == chromEnd
-@test df[:dataValue] == dataValue
+@test df[:chrom] == chroms
+@test df[:chrom_start] == chrom_starts
+@test df[:chrom_end] == chrom_ends
+@test df[:data_value] == data_values
 
 # Write test.
 output_file = tempname() * ".bedgraph"
 
 try
-    Bedgraph.write(chrom, chromStart, chromEnd, dataValue, outfile=output_file)
+    Bedgraph.write(chroms, chrom_starts, chrom_ends, data_values, outfile=output_file)
 
     reloaded_df = Bedgraph.read(output_file)
 
@@ -163,7 +163,7 @@ c1, c2, c3, c4 = Bedgraph._convertCells(Bedgraph._parseLine(line1))
 @test_throws MethodError convert(Track, String(line1, " ", "extra_cell")) #TODO: determine difference between MethodError and ErrorException.
 @test_throws ErrorException convert(Track, [cells1; "extra_cell"])
 
-@test convert(Vector{Track}, chrom, chromStart, chromEnd, dataValue) == tracks
+@test convert(Vector{Track}, chroms, chrom_starts, chrom_ends, data_values) == tracks
 
 end #testset
 
@@ -190,25 +190,25 @@ end #testset
 @testset "Utilities" begin
 
 # Original expansion and compression test.
-(n, expanded_dataValue) = Bedgraph.expand(chromStart, chromEnd, dataValue)
-(compressed_chromStart,compressed_chromEnd,compressed_dataValue) = Bedgraph.compress(n,expanded_dataValue)
-@test chromStart == compressed_chromStart
-@test chromEnd == compressed_chromEnd
-@test dataValue == compressed_dataValue
+(n, expanded_data_value) = Bedgraph.expand(chrom_starts, chrom_ends, data_values)
+(compressed_chrom_start,compressed_chrom_end,compressed_data_value) = Bedgraph.compress(n,expanded_data_value)
+@test chrom_starts == compressed_chrom_start
+@test chrom_ends == compressed_chrom_end
+@test data_values == compressed_data_value
 
 # Expansion and compression test.
-n, expanded_dataValue = Bedgraph.expand(tracks, right_open=true)
-compressed_tracks = Bedgraph.compress("chr19", n, expanded_dataValue, right_open=true)
+n, expanded_data_value = Bedgraph.expand(tracks, right_open=true)
+compressed_tracks = Bedgraph.compress("chr19", n, expanded_data_value, right_open=true)
 @test compressed_tracks == tracks
 
 # Expansion and compression of Tracks.
-n, expanded_dataValue = Bedgraph.expand(tracks, right_open=false)
-compressed_tracks = Bedgraph.compress("chr19", n, expanded_dataValue, right_open=false)
+n, expanded_data_value = Bedgraph.expand(tracks, right_open=false)
+compressed_tracks = Bedgraph.compress("chr19", n, expanded_data_value, right_open=false)
 @test compressed_tracks == tracks
 
 # Expansion and compression of Arrays via convert.
-n, expanded_dataValue = Bedgraph.expand("chr19", chromStart, chromEnd, dataValue)
-compressed_tracks = Bedgraph.compress("chr19", n, expanded_dataValue)
+n, expanded_data_value = Bedgraph.expand("chr19", chrom_starts, chrom_ends, data_values)
+compressed_tracks = Bedgraph.compress("chr19", n, expanded_data_value)
 @test compressed_tracks == tracks
 
 end #testset

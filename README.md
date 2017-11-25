@@ -33,12 +33,12 @@ Bedgraph.jl currently expects arrays to be supplied to its write function.
 ```julia
 using Bedgraph
 
-const chrom = ["chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19"]
-const chromStart = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
-const chromEnd = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
-const dataValue = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
+const chroms = ["chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19"]
+const chrom_starts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
+const chrom_ends = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
+const data_values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
-Bedgraph.write(chrom, chromStart, chromEnd, dataValue, outfile="data.bedgraph")
+Bedgraph.write(chroms, chrom_starts, chrom_ends, data_values, outfile="data.bedgraph")
 ```
 ### Compress data values
 Compress data to chromosome coordinates of the zero-based, half-open format.
@@ -47,9 +47,9 @@ Compress data to chromosome coordinates of the zero-based, half-open format.
 using Bedgraph
 
 n = 49302000:49304700
-expanded_dataValue = [-1.0,-1.0,-1.0, ..., 1.00, 1.00, 1.00]
+expanded_data_values = [-1.0,-1.0,-1.0, ..., 1.00, 1.00, 1.00]
 
-(compressed_chromStart,compressed_chromEnd,compressed_dataValue) = Bedgraph.compress(n,expanded_dataValue)
+(compressed_chrom_starts,compressed_chrom_ends,compressed_data_values) = Bedgraph.compress(n,expanded_data_values)
 ```
 
 ### Expand data values
@@ -58,9 +58,9 @@ Expand chromosome coordinates from the zero-based, half-open format.
 ```julia
 using Bedgraph
 
-const chromStart = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
-const chromEnd = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
-const dataValue = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
+const chrom_starts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
+const chrom_ends = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
+const data_values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
-(n, expanded_dataValue) = Bedgraph.expand(chromStart, chromEnd, dataValue)
+(n, expanded_data_values) = Bedgraph.expand(chrom_starts, chrom_ends, data_values)
 ```

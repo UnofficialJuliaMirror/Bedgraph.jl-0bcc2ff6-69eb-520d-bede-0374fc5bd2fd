@@ -12,7 +12,7 @@ chrom(c::DataArrays.DataArray{Any,1}) = chrom(dropna(c))
 nucleotides(n::Vector{Int}) = n
 nucleotides(n::UnitRange{Int}) = collect(n) #Note: to me it feels unreasonable to collect a range.
 nucleotides(n::DataArrays.DataArray{Any,1}) = convert(Vector{Int}, n)
-dataValues(v::DataArrays.DataArray{Any,1}) = convert(Vector{T}, v) where {T<:Real}
+data_values(v::DataArrays.DataArray{Any,1}) = convert(Vector{T}, v) where {T<:Real}
 
 
 struct Track
@@ -76,7 +76,7 @@ function isComment(line::String) :: Bool
     return ismatch(r"^\s*(?:#|$)", line)
 end
 
-#
+
 function seekNextTrack(io) :: Void
     seekstart(io)
 
@@ -147,32 +147,32 @@ function read(file::AbstractString, sink=DataFrame)
 		return readdlm(io)
 	end
 
-    sink = DataFrame(chrom=data[:,1], chromStart=data[:,2], chromEnd=data[:,3], dataValue=data[:,4])
+    sink = DataFrame(chrom=data[:,1], chrom_start=data[:,2], chrom_end=data[:,3], data_value=data[:,4])
 
     return sink
 end
 
-function compress(c::Vector{String}, n::Vector{Int}, v::Vector{<:Real}; right_open = true, bump_back=true) :: Vector{Track}
+function compress(chroms::Vector{String}, n::Vector{Int}, values::Vector{<:Real}; right_open = true, bump_back=true) :: Vector{Track}
 
     ranges = Vector{UnitRange{Int}}()
-    values = Vector{Float64}()
-    chroms = Vector{String}()
+    compressed_values = Vector{Float64}()
+    compressed_chroms = Vector{String}()
 
     range_start = 1
-    push!(values, v[1])
+    push!(compressed_values, values[1])
 
-    for (index, value ) in enumerate(v)
-        if value != values[end]
+    for (index, value ) in enumerate(values)
+        if value != compressed_values[end]
             push!(ranges, n[range_start] : n[index - 1] )
-            push!(values, value)
-            push!(chroms, c[index])
+            push!(compressed_values, value)
+            push!(compressed_chroms, chroms[index])
             range_start = index
         end
 
-        if index == length(v)
+        if index == length(values)
             push!(ranges, n[range_start] : n[index] )
-            push!(values, value)
-            push!(chroms, c[index])
+            push!(compressed_values, value)
+            push!(compressed_chroms, chroms[index])
         end
     end
 
@@ -189,26 +189,26 @@ function compress(c::Vector{String}, n::Vector{Int}, v::Vector{<:Real}; right_op
     new_tracks = Vector{Track}()
 
     for (index, range) in enumerate(ranges)
-        new_track  = Track(chroms[index], first(range), last(range), values[index])
+        new_track  = Track(compressed_chroms[index], first(range), last(range), compressed_values[index])
         push!(new_tracks, new_track)
     end
 
     return bump_back ? _bumpBack(new_tracks) : new_tracks
 
 end
-compress(c::String, n::Vector{Int}, v::Vector{T}; right_open = true, bump_back=true) where {T<:Real} = compress(fill(c, length(n)), n, v, right_open = right_open, bump_back = bump_back)
+compress(chrom::String, n::Vector{Int}, values::Vector{T}; right_open = true, bump_back=true) where {T<:Real} = compress(fill(chrom, length(n)), n, values, right_open = right_open, bump_back = bump_back)
 
 
 function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real} #TODO: deprecate.
 
     # chrom::Vector{String} = []
-    chromStart::Vector{Int} = []
-    chromEnd::Vector{Int} = []
-    dataValue::Vector{Real} = []
+    chrom_starts::Vector{Int} = []
+    chrom_ends::Vector{Int} = []
+    data_values::Vector{Real} = []
 
     # Start inital track.
     # push!(chrom, c[1])
-    push!(chromStart, n[1])
+    push!(chrom_starts, n[1])
 
     previous_value = v[1]
 
@@ -219,16 +219,16 @@ function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real} #TODO: deprecate
         # Finish current track and start new track if value has changed.
         if value != previous_value
             # Push track end.
-            push!(chromEnd, n[state-1])
+            push!(chrom_ends, n[state-1])
 
             # Push track value.
-            push!(dataValue, previous_value)
+            push!(data_values, previous_value)
 
             # Start new track
             # push!(chrom, c[1])
 
             # Push track start.
-            push!(chromStart, n[state-1])
+            push!(chrom_starts, n[state-1])
 
             previous_value = value
         end
@@ -236,15 +236,15 @@ function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real} #TODO: deprecate
         if done(v, state)
 
             # Push final track end.
-            push!(chromEnd, n[state-1])
+            push!(chrom_ends, n[state-1])
 
             # Push final track value.
-            push!(dataValue, value)
+            push!(data_values, value)
         end
     end
 
-    # return (chrom, chromStart, chromEnd, dataValue)
-    return (chromStart, chromEnd, dataValue)
+    # return (chrom, chrom_start, chrom_end, data_value)
+    return (chrom_starts, chrom_ends, data_values)
 end
 
 compress(n, v) =  compress(nucleotides(n), v)
@@ -270,37 +270,37 @@ function expand(tracks::Vector{Track}; right_open=true, bump_forward=true)
     return collect(total_range), values
 end
 
-function expand(chromStart::Vector{Int}, chromEnd::Vector{Int}, dataValue::Vector{T}) where {T<:Real} #TODO: deprecate.
+function expand(chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}) where {T<:Real} #TODO: deprecate.
 
     # Check that array are of equal length.
-    if length(chromStart) != length(chromEnd) || length(chromEnd) != length(dataValue)
-        error("Unequal lengths: chromStart=$(length(chromStart)), chromEnd=$(length(chromEnd)), dataValue=$(length(dataValue))")
+    if length(chrom_starts) != length(chrom_ends) || length(chrom_ends) != length(data_values)
+        error("Unequal lengths: chrom_starts=$(length(chrom_starts)), chrom_ends=$(length(chrom_ends)), data_values=$(length(data_values))")
     end
 
-    nucleotides = chromStart[1] : chromEnd[end]
+    nucleotides = chrom_starts[1] : chrom_ends[end]
     values = zeros(length(nucleotides))
 
     slide = nucleotides[1] - 1
 
-    for n = 1:length(dataValue)
+    for n = 1:length(data_values)
 
-        nStart = chromStart[n] - slide
-        nEnd = chromEnd[n] - slide
+        nStart = chrom_starts[n] - slide
+        nEnd = chrom_ends[n] - slide
 
         # if left value is greater start + 1.
         if n > 1
-            if dataValue[n-1] > dataValue[n]
+            if data_values[n-1] > data_values[n]
                 nStart = nStart + 1
             end
         end
 
-        values[nStart:nEnd] = dataValue[n]
+        values[nStart:nEnd] = data_values[n]
     end
 
     return (nucleotides, values)
 end
 
-expand(chromStart::DataArrays.DataArray{Any,1}, chromEnd::DataArrays.DataArray{Any,1}, dataValue::DataArrays.DataArray{Any,1}) = expand(nucleotides(chromStart), nucleotides(chromEnd), dataValues(dataValue))
+expand(chrom_starts::DataArrays.DataArray{Any,1}, chrom_ends::DataArrays.DataArray{Any,1}, data_values::DataArrays.DataArray{Any,1}) = expand(nucleotides(chrom_starts), nucleotides(chrom_ends), data_values(data_values))
 expand(chrom::String, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( fill(chrom, length(chrom_starts)), chrom_starts, chrom_ends, data_values, right_open=right_open, bump_forward=bump_forward)
 expand(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( convert(Vector{Track}, chroms, chrom_starts, chrom_ends, data_values), right_open=right_open, bump_forward=bump_forward)
 
@@ -315,32 +315,32 @@ function generateBasicHeader(chrom::String, pos_start::Int, pos_end::Int; bump_f
     return ["browser position $chrom:$pos_start-$pos_end", "track type=bedGraph"]
 end
 
-# chrom  chromStart  chromEnd  dataValue
-function write(chrom::Vector{String}, chromStart::Vector{Int}, chromEnd::Vector{Int}, dataValue::Vector{T} ; outfile="out.bedgraph") where {T<:Real}
+# chrom  chrom_start  chrom_end  data_value
+function write(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T} ; outfile="out.bedgraph") where {T<:Real}
 
     # Check that array are of equal length.
-    if length(chrom) != length(chromStart) || length(chromEnd) != length(dataValue) || length(chrom) != length(dataValue)
-        error("Unequal lengths: chrom=$(length(chrom)), chromStart=$(length(chromStart)), chromEnd=$(length(chromEnd)), dataValue=$(length(dataValue))")
+    if length(chroms) != length(chrom_starts) || length(chrom_ends) != length(data_values) || length(chroms) != length(data_values)
+        error("Unequal lengths: chroms=$(length(chroms)), chrom_starts=$(length(chrom_starts)), chrom_ends=$(length(chrom_ends)), data_values=$(length(data_values))")
     end
 
     open(outfile, "w") do f
 
-        for i = 1:length(chrom)
+        for i = 1:length(chroms)
 
             # Write chrom.
-            Base.write(f, chrom[i])
+            Base.write(f, chroms[i])
             Base.write(f, "\t")
 
             # Write chrom start.
-            Base.write(f, string(chromStart[i]))
+            Base.write(f, string(chrom_starts[i]))
             Base.write(f, "\t")
 
             # Write chrom end.
-            Base.write(f, string(chromEnd[i]))
+            Base.write(f, string(chrom_ends[i]))
             Base.write(f, "\t")
 
             # Write data value.
-            Base.write(f, string(dataValue[i]))
+            Base.write(f, string(data_values[i]))
             Base.write(f, "\n")
         end
 
@@ -348,7 +348,7 @@ function write(chrom::Vector{String}, chromStart::Vector{Int}, chromEnd::Vector{
 
 end
 
-write(c, chromStart, chromEnd, dataValue; outfile="out.bedgraph" ) =  write(chrom(c), chromStart, chromEnd, dataValue; outfile="out.bedgraph")
+write(c, chrom_starts, chrom_ends, data_values; outfile="out.bedgraph" ) =  write(chrom(c), chrom_starts, chrom_ends, data_values; outfile="out.bedgraph")
 
 ## Internal helper functions.
 function _parseLine(line::String) ::Vector{String}
