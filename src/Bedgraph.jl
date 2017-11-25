@@ -1,6 +1,5 @@
 module Bedgraph
 using DataFrames
-# using DataArrays
 
 export Track
 
@@ -8,14 +7,8 @@ export Track
 chrom(c::Vector{String}) = c
 chrom(c::SubString{String}) = string(c)
 chrom(c::Vector{Any}) = convert(Vector{String}, c)
-chrom(c::DataArrays.DataArray{Any,1}) = chrom(dropna(c))
 nucleotides(n::Vector{Int}) = n
 nucleotides(n::UnitRange{Int}) = collect(n) #Note: to me it feels unreasonable to collect a range.
-nucleotides(n::DataArrays.DataArray{Any,1}) = convert(Vector{Int}, n)
-data_values(v::DataArrays.DataArray{Any,1}) = convert(Vector{T}, v) where {T<:Real}
-
-
-
 
 
 struct Track
@@ -323,7 +316,6 @@ function expand(chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values:
     return (nucleotides, values)
 end
 
-expand(chrom_starts::DataArrays.DataArray{Any,1}, chrom_ends::DataArrays.DataArray{Any,1}, data_values::DataArrays.DataArray{Any,1}) = expand(nucleotides(chrom_starts), nucleotides(chrom_ends), data_values(data_values))
 expand(chrom::String, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( fill(chrom, length(chrom_starts)), chrom_starts, chrom_ends, data_values, right_open=right_open, bump_forward=bump_forward)
 expand(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( convert(Vector{Track}, chroms, chrom_starts, chrom_ends, data_values), right_open=right_open, bump_forward=bump_forward)
 
