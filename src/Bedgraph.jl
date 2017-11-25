@@ -4,10 +4,6 @@ using DataFrames
 export Track
 
 # Orthogonality.
-chrom(c::Vector{String}) = c
-chrom(c::SubString{String}) = string(c)
-chrom(c::Vector{Any}) = convert(Vector{String}, c)
-nucleotides(n::Vector{Int}) = n
 nucleotides(n::UnitRange{Int}) = collect(n) #Note: to me it feels unreasonable to collect a range.
 
 
