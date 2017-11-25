@@ -15,6 +15,9 @@ nucleotides(n::DataArrays.DataArray{Any,1}) = convert(Vector{Int}, n)
 data_values(v::DataArrays.DataArray{Any,1}) = convert(Vector{T}, v) where {T<:Real}
 
 
+
+
+
 struct Track
     chrom::String
     chrom_start::Int
@@ -27,6 +30,26 @@ function Base.:(==)(a::Track, b::Track)
            a.chrom_start == b.chrom_start &&
            a.chrom_end == b.chrom_end &&
            a.data_value == b.data_value
+end
+
+mutable struct BedgraphHeader{T} #TODO: determine what and how this will be.
+    data::T
+end
+
+struct BedgraphData
+    header::BedgraphHeader
+    tracks::Vector{Track}
+    BedgraphData(header, tracks) = new(BedgraphHeader(header), tracks) #TODO improve.
+end
+
+function Base.convert{T<:Vector{String}}(::Type{String}, header::BedgraphHeader{T}) :: String
+
+    str = ""
+    for line in header.data
+        str = string(str, line, '\n')
+    end
+
+    return str
 end
 
 function Track(data::Vector{String})
@@ -50,7 +73,7 @@ end
 function Base.convert(::Type{Vector{Track}}, chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}) where {T<:Real}
 
     # Check that arrays are of equal length.
-    length(chroms) == length(chrom_starts) && length(chrom_ends) == length(data_values) && length(chroms) == length(data_values) || error("Unequal lengths: chroms=$(length(chroms)), chrom_starts=$(length(chrom_starts)), chrom_ends=$(length(chrom_ends)), data_values=$(length(data_values))")
+    length(chroms) == length(chrom_starts) && length(chrom_ends) == length(data_values) && length(chroms) == length(data_values) || error("Vectors are of unequal lengths: chroms=$(length(chroms)), chrom_starts=$(length(chrom_starts)), chrom_ends=$(length(chrom_ends)), data_values=$(length(data_values))")
 
     N = length(chroms)
 
@@ -90,7 +113,7 @@ function seekNextTrack(io) :: Void
 
     seek(io, pos)
 
-    nothing
+    return nothing
 
 end
 
@@ -316,7 +339,7 @@ function generateBasicHeader(chrom::String, pos_start::Int, pos_end::Int; bump_f
 end
 
 # chrom  chrom_start  chrom_end  data_value
-function write(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T} ; outfile="out.bedgraph") where {T<:Real}
+function write(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T} ; outfile="out.bedgraph") where {T<:Real} #TODO: deprecate
 
     # Check that array are of equal length.
     if length(chroms) != length(chrom_starts) || length(chrom_ends) != length(data_values) || length(chroms) != length(data_values)
@@ -348,7 +371,28 @@ function write(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Ve
 
 end
 
-write(c, chrom_starts, chrom_ends, data_values; outfile="out.bedgraph" ) =  write(chrom(c), chrom_starts, chrom_ends, data_values; outfile="out.bedgraph")
+write(c, chrom_starts, chrom_ends, data_values; outfile="out.bedgraph" ) =  write(chrom(c), chrom_starts, chrom_ends, data_values; outfile="out.bedgraph") #TODO: deprecate
+
+function Base.write(io::IO, tracks::Vector{Track}) #Note: we assume the indexes have been bumpped and the open ends are correct.
+    for track in tracks
+        Base.write(io, track, '\n')
+    end
+end
+
+function Base.write(io::IO, track::Track)
+    # delim = '\t'
+    delim = ' '
+    return Base.write(io, string(track.chrom, delim, track.chrom_start, delim, track.chrom_end, delim, track.data_value))
+end
+
+function Base.write(io::IO, header::BedgraphHeader)
+    return Base.write(io, convert(String, header))
+end
+
+function Base.write(io::IO, bedgraph::BedgraphData)
+    Base.write(io, bedgraph.header)
+    Base.write(io, bedgraph.tracks)
+end
 
 ## Internal helper functions.
 function _parseLine(line::String) ::Vector{String}
@@ -356,7 +400,7 @@ function _parseLine(line::String) ::Vector{String}
 end
 
 function _convertCells(cells::Vector{String})
-    length(cells) == 4 || error("Poor line formatting:", cells)
+    length(cells) == 4 || error("Poor formatting:", cells)
     return cells[1], parse(Int, cells[2]), parse(Int, cells[3]), parse(Float64, cells[4]) #TODO: parse cell 4 as a generic Real.
 end
 

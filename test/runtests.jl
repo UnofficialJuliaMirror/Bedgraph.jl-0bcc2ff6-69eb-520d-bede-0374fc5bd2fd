@@ -39,12 +39,15 @@ const line1_5 = "    chr19 49302000 49302300 -1.0" # tab at start.
 const line1_6 = "chr19 49302000 49302300 -1.0 " # space at end.
 const line1_7 = "chr19 49302000 49302300 -1.0    " # tab at end.
 
-const cells1 = ["chr19", "49302000", "49302300", "-1.0"] :: Vector{String}
+const cells1 = ["chr19", "49302000", "49302300", "-1.0"]
 
 const track1 = Track("chr19", 49302000, 49302300, -1.0)
 
+track1
+
+
+const parameter_line_min = "track type=bedGraph"
 const parameter_line = "track type=bedGraph name=\"BedGraph Format\" description=\"BedGraph format\" visibility=full color=200,100,0 altColor=0,100,200 priority=20"
-const parameter_line_short = "track type=bedGraph"
 const parameter_line_4 = "track type=bedGraph name=track_label description=center_label"
 const parameter_line_long = "track type=bedGraph name=track_label description=center_label visibility=display_mode color=r,g,b altColor=r,g,b priority=priority autoScale=on|off alwaysZero=on|off gridDefault=on|off maxHeightPixels=max:default:min graphType=bar|points viewLimits=lower:upper yLineMark=real-value yLineOnOff=on|off windowingFunction=maximum|mean|minimum smoothingWindow=off|2-16"
 
@@ -94,6 +97,7 @@ df = Bedgraph.read(file)
 
 # Write test.
 output_file = tempname() * ".bedgraph"
+info(output_file)
 
 try
     Bedgraph.write(chroms, chrom_starts, chrom_ends, data_values, outfile=output_file)
@@ -102,7 +106,34 @@ try
 
     @test df == reloaded_df
 finally
-    gc()
+    rm(output_file)
+end
+
+
+output_file = tempname() * ".bedgraph"
+info(output_file)
+bedgraph = Bedgraph.BedgraphData(header, tracks)
+
+try
+    open(output_file, "w") do io
+        write(io, bedgraph)
+    end
+    # @test   readstring(file) ==  readstring(output_file) # differnces in float representation, but otherwise hold the same information.
+    #TODO: explicitly test that files hold the same information.
+finally
+    rm(output_file)
+end
+
+output_file = tempname() * ".bedgraph"
+info(output_file)
+
+try
+    open(output_file, "w") do io
+        write(io, Bedgraph.BedgraphData(Bedgraph.generateBasicHeader("chr19", tracks[1].chrom_start, tracks[end].chrom_end, bump_forward=false), tracks))
+    end
+    # @test   readstring(file) ==  readstring(output_file) # differnces in float representation, but otherwise hold the same information.
+    #TODO: explicitly test that files hold the same information.
+finally
     rm(output_file)
 end
 
@@ -117,7 +148,7 @@ end #testset
 @test Bedgraph.isLikeTrack("1 2 3 4") == false
 @test Bedgraph.isLikeTrack(parameter_line) == false
 @test Bedgraph.isLikeTrack(parameter_line_4) == false
-@test Bedgraph.isLikeTrack(parameter_line_short) == false
+@test Bedgraph.isLikeTrack(parameter_line_min) == false
 @test Bedgraph.isLikeTrack(parameter_line_long) == false
 @test Bedgraph.isLikeTrack(line1) == true
 @test Bedgraph.isLikeTrack(line1_2) == true
