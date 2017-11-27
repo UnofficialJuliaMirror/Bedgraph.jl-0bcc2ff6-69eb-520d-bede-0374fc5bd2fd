@@ -328,6 +328,18 @@ function generateBasicHeader(chrom::String, pos_start::Int, pos_end::Int; bump_f
     return ["browser position $chrom:$pos_start-$pos_end", "track type=bedGraph"]
 end
 
+function generateBasicHeader(tracks::Vector{Track}; bump_forward=true) :: Vector{String}
+
+    chrom = tracks[1].chrom
+
+    if bump_forward
+        pos_start = tracks[1].chrom_start + 1
+        pos_end = tracks[end].chrom_end + 1
+    end
+
+    return ["browser position $chrom:$pos_start-$pos_end", "track type=bedGraph"]
+end
+
 # chrom  chrom_start  chrom_end  data_value
 function write(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T} ; outfile="out.bedgraph") where {T<:Real} #TODO: deprecate
 
