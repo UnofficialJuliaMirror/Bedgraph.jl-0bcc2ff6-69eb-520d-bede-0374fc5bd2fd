@@ -77,7 +77,7 @@ end
 
 # Check if the track data is in the four column BED format.
 function isLikeTrack(line::String) :: Bool
-    return  ismatch(r"^\s*([A-Za-z]+\S*)\s+(\d+)\s+(\d+)\s+(\S*\d)\s*$", line) # Note: is like a Track.
+    return  ismatch(r"^\s*\S*(?=[A-Za-z])\S*\s+(\d+)\s+(\d+)\s+(\S*\d)\s*$", line) # Note: is like a Track.
 end
 
 function isBrowser(line::String) :: Bool

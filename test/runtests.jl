@@ -31,6 +31,9 @@ const line7 = "chr19 49303800 49304100 0.50"
 const line8 = "chr19 49304100 49304400 0.75"
 const line9 = "chr19 49304400 49304700 1.00"
 
+const line_other_space = "2R 8225773 8226043 -0.426032509896305"
+const line_other = "2R	8225773	8226043	-0.426032509896305"
+
 # Varaiations of line 1.
 const line1_2 = "chr19   49302000    49302300    -1.0" # tab separated.
 const line1_3 = "chr19  49302000     49302300        -1.0" # mix of tabs and spaces.
@@ -42,9 +45,6 @@ const line1_7 = "chr19 49302000 49302300 -1.0    " # tab at end.
 const cells1 = ["chr19", "49302000", "49302300", "-1.0"]
 
 const track1 = Track("chr19", 49302000, 49302300, -1.0)
-
-track1
-
 
 const parameter_line_min = "track type=bedGraph"
 const parameter_line = "track type=bedGraph name=\"BedGraph Format\" description=\"BedGraph format\" visibility=full color=200,100,0 altColor=0,100,200 priority=20"
@@ -157,6 +157,10 @@ end #testset
 @test Bedgraph.isLikeTrack(line1_5) == true
 @test Bedgraph.isLikeTrack(line1_6) == true
 @test Bedgraph.isLikeTrack(line1_7) == true
+
+
+@test Bedgraph.isLikeTrack(line_other_space) == true
+@test Bedgraph.isLikeTrack(line_other) == true
 
 end #testset
 
