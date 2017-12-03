@@ -274,12 +274,14 @@ function expand(tracks::Vector{Track}; right_open=true, bump_forward=true)
     total_range =_range(tracks, right_open = right_open)
 
     values = Vector{Float64}(length(total_range))
+    chroms = Vector{String}(length(total_range))
 
     for track in tracks
         values[findin(total_range, _range(track, right_open = right_open))] = track.data_value
+        chroms[findin(total_range, _range(track, right_open = right_open))] = track.chrom
     end
 
-    return collect(total_range), values
+    return collect(total_range), values, chroms
 end
 
 function expand(chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}) where {T<:Real} #TODO: deprecate.
