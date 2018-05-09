@@ -1,3 +1,5 @@
+__precompile__()
+
 module Bedgraph
 using DataFrames
 
@@ -323,6 +325,18 @@ function generateBasicHeader(chrom::String, pos_start::Int, pos_end::Int; bump_f
     if bump_forward
         pos_start += 1
         pos_end += 1
+    end
+
+    return ["browser position $chrom:$pos_start-$pos_end", "track type=bedGraph"]
+end
+
+function generateBasicHeader(tracks::Vector{Track}; bump_forward=true) :: Vector{String}
+
+    chrom = tracks[1].chrom
+
+    if bump_forward
+        pos_start = tracks[1].chrom_start + 1
+        pos_end = tracks[end].chrom_end + 1
     end
 
     return ["browser position $chrom:$pos_start-$pos_end", "track type=bedGraph"]
