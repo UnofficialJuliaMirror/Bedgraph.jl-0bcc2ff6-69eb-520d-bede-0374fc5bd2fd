@@ -3,24 +3,24 @@ __precompile__()
 module Bedgraph
 using DataFrames
 
-export Track
+export Interval
 
 # Orthogonality.
 nucleotides(n::UnitRange{Int}) = collect(n) #Note: to me it feels unreasonable to collect a range.
 
 
-struct Track
+struct Interval
     chrom::String
-    chrom_start::Int
-    chrom_end::Int
-    data_value::Real
+    first::Int
+    last::Int
+    value::Real
 end
 
-function Base.:(==)(a::Track, b::Track)
+function Base.:(==)(a::Interval, b::Interval)
     return a.chrom  == b.chrom &&
-           a.chrom_start == b.chrom_start &&
-           a.chrom_end == b.chrom_end &&
-           a.data_value == b.data_value
+           a.first == b.first &&
+           a.last == b.last &&
+           a.value == b.value
 end
 
 mutable struct BedgraphHeader{T} #TODO: determine what and how this will be.
@@ -29,8 +29,8 @@ end
 
 struct BedgraphData
     header::BedgraphHeader
-    tracks::Vector{Track}
-    BedgraphData(header, tracks) = new(BedgraphHeader(header), tracks) #TODO improve.
+    intervals::Vector{Interval}
+    BedgraphData(header, intervals) = new(BedgraphHeader(header), intervals) #TODO improve.
 end
 
 function Base.convert{T<:Vector{String}}(::Type{String}, header::BedgraphHeader{T}) :: String
@@ -43,43 +43,43 @@ function Base.convert{T<:Vector{String}}(::Type{String}, header::BedgraphHeader{
     return str
 end
 
-function Track(data::Vector{String})
-    return convert(Track, data)
+function Interval(data::Vector{String})
+    return convert(Interval, data)
 end
 
-function Base.convert(::Type{Track}, data::Vector{String})
+function Base.convert(::Type{Interval}, data::Vector{String})
     c1, c2, c3, c4 = _convertCells(data)
-    return Track(c1, c2, c3, c4)
+    return Interval(c1, c2, c3, c4)
 end
 
-function Track(data::String)
-    return convert(Track, data)
+function Interval(data::String)
+    return convert(Interval, data)
 end
 
-function Base.convert(::Type{Track}, str::String)
+function Base.convert(::Type{Interval}, str::String)
     data = _parseLine(str)
-    return convert(Track, data)
+    return convert(Interval, data)
 end
 
-function Base.convert(::Type{Vector{Track}}, chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}) where {T<:Real}
+function Base.convert(::Type{Vector{Interval}}, chroms::Vector{String}, interval_firsts::Vector{Int}, interval_lasts::Vector{Int}, interval_values::Vector{T}) where {T<:Real}
 
     # Check that arrays are of equal length.
-    length(chroms) == length(chrom_starts) && length(chrom_ends) == length(data_values) && length(chroms) == length(data_values) || error("Vectors are of unequal lengths: chroms=$(length(chroms)), chrom_starts=$(length(chrom_starts)), chrom_ends=$(length(chrom_ends)), data_values=$(length(data_values))")
+    length(chroms) == length(interval_firsts) && length(interval_lasts) == length(interval_values) && length(chroms) == length(interval_values) || error("Vectors are of unequal lengths: chroms=$(length(chroms)), interval_firsts=$(length(interval_firsts)), interval_lasts=$(length(interval_lasts)), interval_values=$(length(interval_values))")
 
     N = length(chroms)
 
-    tracks = Vector{Track}(N)
+    intervals = Vector{Interval}(N)
 
     for i in 1:N
-        tracks[i] = Track(chroms[i], chrom_starts[i], chrom_ends[i], data_values[i])
+        intervals[i] = Interval(chroms[i], interval_firsts[i], interval_lasts[i], interval_values[i])
     end
 
-    return tracks
+    return intervals
 end
 
-# Check if the track data is in the four column BED format.
-function isLikeTrack(line::String) :: Bool
-    return  ismatch(r"^\s*\S*(?=[A-Za-z])\S*\s+(\d+)\s+(\d+)\s+(\S*\d)\s*$", line) # Note: is like a Track.
+# Check if the interval data is in the four column BED format.
+function isLikeInterval(line::String) :: Bool
+    return  ismatch(r"^\s*\S*(?=[A-Za-z])\S*\s+(\d+)\s+(\d+)\s+(\S*\d)\s*$", line) # Note: is like a Interval.
 end
 
 function isBrowser(line::String) :: Bool
@@ -91,13 +91,13 @@ function isComment(line::String) :: Bool
 end
 
 
-function seekNextTrack(io) :: Void
+function seekNextInterval(io) :: Void
     seekstart(io)
 
     pos = position(io)
     line = ""
 
-    while !eof(io) && !isLikeTrack(line)
+    while !eof(io) && !isLikeInterval(line)
         pos = position(io)
         line = readline(io)
     end
@@ -114,10 +114,10 @@ function readParameters(io) :: String
 
     pos = position(io)
 
-    while !eof(io) && !isLikeTrack(line) # Note: regex is used to limit the search by exiting the loop when a line matches the bedGraph track format.
+    while !eof(io) && !isLikeInterval(line) # Note: regex is used to limit the search by exiting the loop when a line matches the bedGraph interval format.
         line = readline(io)
 
-        if contains(line, "type=bedGraph") # Note: the track type is REQUIRED, and must be bedGraph.
+        if contains(line, "type=bedGraph") # Note: the interval type is REQUIRED, and must be bedGraph.
             return line
         end
 
@@ -130,7 +130,7 @@ function readHeader(io) :: Vector{String}
     header = String[]
     line = readline(io)
 
-    while !eof(io) && !isLikeTrack(line) # TODO: seek more rebust check.
+    while !eof(io) && !isLikeInterval(line) # TODO: seek more rebust check.
         push!(header, line)
         line = readline(io)
     end
@@ -139,16 +139,16 @@ function readHeader(io) :: Vector{String}
 
 end
 
-function readTracks(io) :: Vector{Track}
-    seekNextTrack(io)
+function readIntervals(io) :: Vector{Interval}
+    seekNextInterval(io)
 
-    tracks = Track[]
+    intervals = Interval[]
 
     while !eof(io)
-        push!(tracks, Track(readline(io)))
+        push!(intervals, Interval(readline(io)))
     end
 
-    return tracks
+    return intervals
 
 end
 
@@ -157,16 +157,16 @@ function read(file::AbstractString, sink=DataFrame)
     # Data.close!(sink)
 
     data = open(file, "r") do io
-        seekNextTrack(io)
+        seekNextInterval(io)
 		return readdlm(io)
 	end
 
-    sink = DataFrame(chrom=data[:,1], chrom_start=data[:,2], chrom_end=data[:,3], data_value=data[:,4])
+    sink = DataFrame(chrom=data[:,1], first=data[:,2], last=data[:,3], value=data[:,4])
 
     return sink
 end
 
-function compress(chroms::Vector{String}, n::Vector{Int}, values::Vector{<:Real}; right_open = true, bump_back=true) :: Vector{Track}
+function compress(chroms::Vector{String}, n::Vector{Int}, values::Vector{<:Real}; right_open = true, bump_back=true) :: Vector{Interval}
 
     ranges = Vector{UnitRange{Int}}()
     compressed_values = Vector{Float64}()
@@ -200,14 +200,14 @@ function compress(chroms::Vector{String}, n::Vector{Int}, values::Vector{<:Real}
         end
     end
 
-    new_tracks = Vector{Track}()
+    new_intervals = Vector{Interval}()
 
     for (index, range) in enumerate(ranges)
-        new_track  = Track(compressed_chroms[index], first(range), last(range), compressed_values[index])
-        push!(new_tracks, new_track)
+        new_interval  = Interval(compressed_chroms[index], first(range), last(range), compressed_values[index])
+        push!(new_intervals, new_interval)
     end
 
-    return bump_back ? _bumpBack(new_tracks) : new_tracks
+    return bump_back ? _bumpBack(new_intervals) : new_intervals
 
 end
 compress(chrom::String, n::Vector{Int}, values::Vector{T}; right_open = true, bump_back=true) where {T<:Real} = compress(fill(chrom, length(n)), n, values, right_open = right_open, bump_back = bump_back)
@@ -216,13 +216,13 @@ compress(chrom::String, n::Vector{Int}, values::Vector{T}; right_open = true, bu
 function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real} #TODO: deprecate.
 
     # chrom::Vector{String} = []
-    chrom_starts::Vector{Int} = []
-    chrom_ends::Vector{Int} = []
-    data_values::Vector{Real} = []
+    interval_firsts::Vector{Int} = []
+    interval_lasts::Vector{Int} = []
+    interval_values::Vector{Real} = []
 
-    # Start inital track.
+    # Start inital interval.
     # push!(chrom, c[1])
-    push!(chrom_starts, n[1])
+    push!(interval_firsts, n[1])
 
     previous_value = v[1]
 
@@ -230,94 +230,94 @@ function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real} #TODO: deprecate
     while !done(v, state)
         (value, state) = next(v, state)
 
-        # Finish current track and start new track if value has changed.
+        # Finish current interval and start new interval if value has changed.
         if value != previous_value
-            # Push track end.
-            push!(chrom_ends, n[state-1])
+            # Push interval end.
+            push!(interval_lasts, n[state-1])
 
-            # Push track value.
-            push!(data_values, previous_value)
+            # Push interval value.
+            push!(interval_values, previous_value)
 
-            # Start new track
+            # Start new interval
             # push!(chrom, c[1])
 
-            # Push track start.
-            push!(chrom_starts, n[state-1])
+            # Push interval start.
+            push!(interval_firsts, n[state-1])
 
             previous_value = value
         end
 
         if done(v, state)
 
-            # Push final track end.
-            push!(chrom_ends, n[state-1])
+            # Push final interval end.
+            push!(interval_lasts, n[state-1])
 
-            # Push final track value.
-            push!(data_values, value)
+            # Push final interval value.
+            push!(interval_values, value)
         end
     end
 
-    # return (chrom, chrom_start, chrom_end, data_value)
-    return (chrom_starts, chrom_ends, data_values)
+    # return (chrom, first, last, value)
+    return (interval_firsts, interval_lasts, interval_values)
 end
 
 compress(n, v) =  compress(nucleotides(n), v)
 
 
 
-function expand(tracks::Vector{Track}; right_open=true, bump_forward=true)
+function expand(intervals::Vector{Interval}; right_open=true, bump_forward=true)
 
-    #TODO: ensure tracks are sorted with no overlap.
+    #TODO: ensure intervals are sorted with no overlap.
 
     if bump_forward
-        tracks =  _bumpForward(tracks)
+        intervals =  _bumpForward(intervals)
     end
 
-    total_range =_range(tracks, right_open = right_open)
+    total_range =_range(intervals, right_open = right_open)
 
     values = Vector{Float64}(length(total_range))
     chroms = Vector{String}(length(total_range))
 
-    for track in tracks
-        values[findin(total_range, _range(track, right_open = right_open))] = track.data_value
-        chroms[findin(total_range, _range(track, right_open = right_open))] = track.chrom
+    for interval in intervals
+        values[findin(total_range, _range(interval, right_open = right_open))] = interval.value
+        chroms[findin(total_range, _range(interval, right_open = right_open))] = interval.chrom
     end
 
     return collect(total_range), values, chroms
 end
 
-function expand(chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}) where {T<:Real} #TODO: deprecate.
+function expand(interval_firsts::Vector{Int}, interval_lasts::Vector{Int}, interval_values::Vector{T}) where {T<:Real} #TODO: deprecate.
 
     # Check that array are of equal length.
-    if length(chrom_starts) != length(chrom_ends) || length(chrom_ends) != length(data_values)
-        error("Unequal lengths: chrom_starts=$(length(chrom_starts)), chrom_ends=$(length(chrom_ends)), data_values=$(length(data_values))")
+    if length(interval_firsts) != length(interval_lasts) || length(interval_lasts) != length(interval_values)
+        error("Unequal lengths: firsts=$(length(interval_firsts)), lasts=$(length(interval_lasts)), values=$(length(interval_values))")
     end
 
-    nucleotides = chrom_starts[1] : chrom_ends[end]
+    nucleotides = interval_firsts[1] : interval_lasts[end]
     values = zeros(length(nucleotides))
 
     slide = nucleotides[1] - 1
 
-    for n = 1:length(data_values)
+    for n = 1:length(interval_values)
 
-        nStart = chrom_starts[n] - slide
-        nEnd = chrom_ends[n] - slide
+        nStart = interval_firsts[n] - slide
+        nEnd = interval_lasts[n] - slide
 
         # if left value is greater start + 1.
         if n > 1
-            if data_values[n-1] > data_values[n]
+            if interval_values[n-1] > interval_values[n]
                 nStart = nStart + 1
             end
         end
 
-        values[nStart:nEnd] = data_values[n]
+        values[nStart:nEnd] = interval_values[n]
     end
 
     return (nucleotides, values)
 end
 
-expand(chrom::String, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( fill(chrom, length(chrom_starts)), chrom_starts, chrom_ends, data_values, right_open=right_open, bump_forward=bump_forward)
-expand(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( convert(Vector{Track}, chroms, chrom_starts, chrom_ends, data_values), right_open=right_open, bump_forward=bump_forward)
+expand(chrom::String, interval_firsts::Vector{Int}, interval_lasts::Vector{Int}, interval_values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( fill(chrom, length(interval_firsts)), interval_firsts, interval_lasts, interval_values, right_open=right_open, bump_forward=bump_forward)
+expand(chroms::Vector{String}, interval_firsts::Vector{Int}, interval_lasts::Vector{Int}, interval_values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( convert(Vector{Interval}, chroms, interval_firsts, interval_lasts, interval_values), right_open=right_open, bump_forward=bump_forward)
 
 
 function generateBasicHeader(chrom::String, pos_start::Int, pos_end::Int; bump_forward=true) :: Vector{String}
@@ -327,27 +327,27 @@ function generateBasicHeader(chrom::String, pos_start::Int, pos_end::Int; bump_f
         pos_end += 1
     end
 
-    return ["browser position $chrom:$pos_start-$pos_end", "track type=bedGraph"]
+    return ["browser position $chrom:$pos_start-$pos_end", "interval type=bedGraph"]
 end
 
-function generateBasicHeader(tracks::Vector{Track}; bump_forward=true) :: Vector{String}
+function generateBasicHeader(intervals::Vector{Interval}; bump_forward=true) :: Vector{String}
 
-    chrom = tracks[1].chrom
+    chrom = intervals[1].chrom
 
     if bump_forward
-        pos_start = tracks[1].chrom_start + 1
-        pos_end = tracks[end].chrom_end + 1
+        pos_start = intervals[1].first + 1
+        pos_end = intervals[end].last + 1
     end
 
-    return ["browser position $chrom:$pos_start-$pos_end", "track type=bedGraph"]
+    return ["browser position $chrom:$pos_start-$pos_end", "interval type=bedGraph"]
 end
 
-# chrom  chrom_start  chrom_end  data_value
-function write(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T} ; outfile="out.bedgraph") where {T<:Real} #TODO: deprecate
+# chrom  first  last  value
+function write(chroms::Vector{String}, interval_firsts::Vector{Int}, interval_lasts::Vector{Int}, interval_values::Vector{T} ; outfile="out.bedgraph") where {T<:Real} #TODO: deprecate
 
     # Check that array are of equal length.
-    if length(chroms) != length(chrom_starts) || length(chrom_ends) != length(data_values) || length(chroms) != length(data_values)
-        error("Unequal lengths: chroms=$(length(chroms)), chrom_starts=$(length(chrom_starts)), chrom_ends=$(length(chrom_ends)), data_values=$(length(data_values))")
+    if length(chroms) != length(interval_firsts) || length(interval_lasts) != length(interval_values) || length(chroms) != length(interval_values)
+        error("Unequal lengths: chroms=$(length(chroms)), interval_firsts=$(length(interval_firsts)), interval_lasts=$(length(interval_lasts)), interval_values=$(length(interval_values))")
     end
 
     open(outfile, "w") do f
@@ -359,15 +359,15 @@ function write(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Ve
             Base.write(f, "\t")
 
             # Write chrom start.
-            Base.write(f, string(chrom_starts[i]))
+            Base.write(f, string(interval_firsts[i]))
             Base.write(f, "\t")
 
             # Write chrom end.
-            Base.write(f, string(chrom_ends[i]))
+            Base.write(f, string(interval_lasts[i]))
             Base.write(f, "\t")
 
             # Write data value.
-            Base.write(f, string(data_values[i]))
+            Base.write(f, string(interval_values[i]))
             Base.write(f, "\n")
         end
 
@@ -375,18 +375,18 @@ function write(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Ve
 
 end
 
-write(c, chrom_starts, chrom_ends, data_values; outfile="out.bedgraph" ) =  write(chrom(c), chrom_starts, chrom_ends, data_values; outfile="out.bedgraph") #TODO: deprecate
+write(c, interval_firsts, interval_lasts, interval_values; outfile="out.bedgraph" ) =  write(chrom(c), interval_firsts, interval_lasts, interval_values; outfile="out.bedgraph") #TODO: deprecate
 
-function Base.write(io::IO, tracks::Vector{Track}) #Note: we assume the indexes have been bumpped and the open ends are correct.
-    for track in tracks
-        Base.write(io, track, '\n')
+function Base.write(io::IO, intervals::Vector{Interval}) #Note: we assume the indexes have been bumpped and the open ends are correct.
+    for interval in intervals
+        Base.write(io, interval, '\n')
     end
 end
 
-function Base.write(io::IO, track::Track)
+function Base.write(io::IO, interval::Interval)
     # delim = '\t'
     delim = ' '
-    return Base.write(io, string(track.chrom, delim, track.chrom_start, delim, track.chrom_end, delim, track.data_value))
+    return Base.write(io, string(interval.chrom, delim, interval.first, delim, interval.last, delim, interval.value))
 end
 
 function Base.write(io::IO, header::BedgraphHeader)
@@ -395,7 +395,7 @@ end
 
 function Base.write(io::IO, bedgraph::BedgraphData)
     Base.write(io, bedgraph.header)
-    Base.write(io, bedgraph.tracks)
+    Base.write(io, bedgraph.intervals)
 end
 
 ## Internal helper functions.
@@ -409,32 +409,32 @@ function _convertCells(cells::Vector{String})
 end
 
 
-function _bump(tracks::Vector{Track}, b::Int) :: Vector{Track}
+function _bump(intervals::Vector{Interval}, b::Int) :: Vector{Interval}
 
-    new_tracks = Vector{Track}()
+    new_intervals = Vector{Interval}()
 
-    for track in tracks
-        new_track  = Track(track.chrom, track.chrom_start + b, track.chrom_end + b, track.data_value)
-        push!(new_tracks, new_track)
+    for interval in intervals
+        new_interval  = Interval(interval.chrom, interval.first + b, interval.last + b, interval.value)
+        push!(new_intervals, new_interval)
     end
 
-    return new_tracks
+    return new_intervals
 end
-_bumpForward(tracks::Vector{Track}) = _bump(tracks, 1)
-_bumpBack(tracks::Vector{Track}) = _bump(tracks, -1)
+_bumpForward(intervals::Vector{Interval}) = _bump(intervals, 1)
+_bumpBack(intervals::Vector{Interval}) = _bump(intervals, -1)
 
-function _range(track::Track; right_open=true) :: UnitRange{Int}
+function _range(interval::Interval; right_open=true) :: UnitRange{Int}
 
-    pos_start = right_open ? track.chrom_start : track.chrom_start + 1
-    pos_end = right_open ? track.chrom_end - 1 : track.chrom_end
+    pos_start = right_open ? interval.first : interval.first + 1
+    pos_end = right_open ? interval.last - 1 : interval.last
 
     return pos_start : pos_end
 end
 
-function _range(tracks::Vector{Track}; right_open=true) :: UnitRange{Int}
+function _range(intervals::Vector{Interval}; right_open=true) :: UnitRange{Int}
 
-    pos_start = _range(tracks[1], right_open=right_open)[1]
-    pos_end = _range(tracks[end], right_open=right_open)[end]
+    pos_start = _range(intervals[1], right_open=right_open)[1]
+    pos_end = _range(intervals[end], right_open=right_open)[end]
 
     return  pos_start : pos_end
 end

@@ -22,7 +22,7 @@ Use Pkg.add("Bedgraph") in Julia to install Bedgraph.jl and its dependencies.
 ### Reading and writing bedGraph files
 > See source for optional `bump_back`, `bump_forward`, and `right_open` key values. These options are included in the pertinent read/write functions to handle quirks of the zero-based and half-open nature of the bedGraph format.
 
-#### Read a bedGraph file into a DataFrame
+#### Read intervals from a bedGraph file into a DataFrame
 Bedgraph.jl currently returns read data as a DataFrame.
 
 ```julia
@@ -41,39 +41,39 @@ open(file, "r") do io
 end
 ```
 
-#### Read tracks
+#### Read intervals
 
 ```julia
 using Bedgraph
 
-tracks = Vector{Track}()
+intervals = Vector{Interval}()
 open(file, "r") do io
-    tracks = Bedgraph.readTracks(io)
+    intervals = Bedgraph.readIntervals(io)
 end
 ```
 
-#### Write a bedGraph file
+#### Write intervals to a bedGraph file
 Bedgraph.jl currently provides two options. Either vectors or a BedgraphData type can be supplied to its write function.
 
 ```julia
 using Bedgraph
 
 const chroms = ["chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19"]
-const chrom_starts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
-const chrom_ends = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
-const data_values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
+const interval_firsts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
+const interval_lasts = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
+const interval_values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
-Bedgraph.write(chroms, chrom_starts, chrom_ends, data_values, outfile="data.bedgraph")
+Bedgraph.write(chroms, interval_firsts, interval_lasts, interval_values, outfile="data.bedgraph")
 ```
 
 
 ```julia
 using Bedgraph
 
-tracks = [Track("chr19", 49302000, 49302300, -1.0), Track("chr19", 49302300, 49302600, -1.75)]
+intervals = [Interval("chr19", 49302000, 49302300, -1.0), Interval("chr19", 49302300, 49302600, -1.75)]
 
 open(output_file, "w") do io
-    write(io, Bedgraph.BedgraphData(Bedgraph.generateBasicHeader("chr19", tracks[1].chrom_start, tracks[end].chrom_end, bump_forward=false), tracks))
+    write(io, Bedgraph.BedgraphData(Bedgraph.generateBasicHeader("chr19", intervals[1].first, intervals[end].last, bump_forward=false), intervals))
 end
 
 ```
@@ -86,37 +86,37 @@ Compress data to chromosome coordinates of the zero-based, half-open format.
 using Bedgraph
 
 n = 49302000:49304700
-expanded_data_values = [-1.0,-1.0,-1.0, ..., 1.00, 1.00, 1.00]
+expanded_interval_values = [-1.0,-1.0,-1.0, ..., 1.00, 1.00, 1.00]
 
-(compressed_chrom_starts,compressed_chrom_ends,compressed_data_values) = Bedgraph.compress(n,expanded_data_values)
+(compressed_interval_firsts,compressed_interval_lasts,compressed_interval_values) = Bedgraph.compress(n,expanded_interval_values)
 ```
 
 ```julia
 using Bedgraph
 
-const tracks = [Track("chr19", 49302000, 49302300, -1.0), Track("chr19", 49302300, 49302600, -1.75)]
+const intervals = [Interval("chr19", 49302000, 49302300, -1.0), Interval("chr19", 49302300, 49302600, -1.75)]
 
-compressed_tracks = Bedgraph.compress("chr19", n, expanded_data_value)
+compressed_intervals = Bedgraph.compress("chr19", n, expanded_data_value)
 ```
 
-#### Expand track data
+#### Expand interval data
 Expand chromosome coordinates from the zero-based, half-open format.
 
 ```julia
 using Bedgraph
 
-const chrom_starts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
-const chrom_ends = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
-const data_values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
+const interval_firsts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
+const interval_lasts = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
+const interval_values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
-(n, expanded_data_values) = Bedgraph.expand(chrom_starts, chrom_ends, data_values)
+(n, expanded_interval_values) = Bedgraph.expand(interval_firsts, interval_lasts, interval_values)
 ```
 
 ```julia
 
 using Bedgraph
 
-const tracks = [Track("chr19", 49302000, 49302300, -1.0), Track("chr19", 49302300, 49302600, -1.75)]
+const intervals = [Interval("chr19", 49302000, 49302300, -1.0), Interval("chr19", 49302300, 49302600, -1.75)]
 
-n, expanded_data_values = Bedgraph.expand(tracks)
+n, expanded_interval_values = Bedgraph.expand(intervals)
 ```

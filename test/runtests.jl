@@ -5,9 +5,9 @@ using Base.Test
 @testset "Bedgraph" begin
 
 const chroms = ["chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19"]
-const chrom_starts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
-const chrom_ends = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
-const data_values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
+const interval_firsts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
+const interval_lasts = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
+const interval_values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
 
 const browser1 = "browser position chr19:49302001-49304701"
@@ -44,18 +44,18 @@ const line1_7 = "chr19 49302000 49302300 -1.0    " # tab at end.
 
 const cells1 = ["chr19", "49302000", "49302300", "-1.0"]
 
-const track1 = Track("chr19", 49302000, 49302300, -1.0)
+const interval1 = Interval("chr19", 49302000, 49302300, -1.0)
 
 const parameter_line_min = "track type=bedGraph"
 const parameter_line = "track type=bedGraph name=\"BedGraph Format\" description=\"BedGraph format\" visibility=full color=200,100,0 altColor=0,100,200 priority=20"
 const parameter_line_4 = "track type=bedGraph name=track_label description=center_label"
-const parameter_line_long = "track type=bedGraph name=track_label description=center_label visibility=display_mode color=r,g,b altColor=r,g,b priority=priority autoScale=on|off alwaysZero=on|off gridDefault=on|off maxHeightPixels=max:default:min graphType=bar|points viewLimits=lower:upper yLineMark=real-value yLineOnOff=on|off windowingFunction=maximum|mean|minimum smoothingWindow=off|2-16"
+const parameter_line_long = "track type=bedGraph name=track_label description=center_label visibility=display_mode color=r, g, b altColor=r, g, b priority=priority autoScale=on|off alwaysZero=on|off gridDefault=on|off maxHeightPixels=max:default:min graphType=bar|points viewLimits=lower:upper yLineMark=real-value yLineOnOff=on|off windowingFunction=maximum|mean|minimum smoothingWindow=off|2-16"
 
 const file = joinpath(@__DIR__, "data.bedgraph")
 const file_headerless = joinpath(@__DIR__, "data-headerless.bedgraph")
 
 const header = [browser1, browser2, browser3, browser4, comment1, comment2, comment3, comment4, parameter_line]
-const tracks = [Track(track1), Track(line2), Track(line3), Track(line4), Track(line5), Track(line6), Track(line7), Track(line8), Track(line9)]
+const intervals = [Interval(interval1), Interval(line2), Interval(line3), Interval(line4), Interval(line5), Interval(line6), Interval(line7), Interval(line8), Interval(line9)]
 
 @testset "I/O" begin
 
@@ -63,44 +63,44 @@ const tracks = [Track(track1), Track(line2), Track(line3), Track(line4), Track(l
 
 # Seek test.
 open(file, "r") do io
-    Bedgraph.seekNextTrack(io)
+    Bedgraph.seekNextInterval(io)
     @test position(io) == 532
     @test readline(io) == line1
 end
 
 # Check things for headerless files.
 open(file_headerless, "r") do io
-    Bedgraph.seekNextTrack(io)
+    Bedgraph.seekNextInterval(io)
     @test position(io) == 0
     @test readline(io) == line1
 end
 
-open(file, "r") do io # Note: reading tracks first to check seek.
-    @test Bedgraph.readTracks(io) ==  tracks
+open(file, "r") do io # Note: reading intervals first to check seek.
+    @test Bedgraph.readIntervals(io) ==  intervals
     @test Bedgraph.readHeader(io) == header
 end
 
-open(file_headerless, "r") do io # Note: reading tracks first to check seek.
-    @test Bedgraph.readTracks(io) == tracks
+open(file_headerless, "r") do io # Note: reading intervals first to check seek.
+    @test Bedgraph.readIntervals(io) == intervals
     @test Bedgraph.readHeader(io) == []
 end
 
 # Read test.
 df = Bedgraph.read(file)
 
-@test size(df) == (9,4)
+@test size(df) == (9, 4)
 
 @test df[:chrom] == chroms
-@test df[:chrom_start] == chrom_starts
-@test df[:chrom_end] == chrom_ends
-@test df[:data_value] == data_values
+@test df[:first] == interval_firsts
+@test df[:last] == interval_lasts
+@test df[:value] == interval_values
 
 # Write test.
 output_file = tempname() * ".bedgraph"
 info(output_file)
 
 try
-    Bedgraph.write(chroms, chrom_starts, chrom_ends, data_values, outfile=output_file)
+    Bedgraph.write(chroms, interval_firsts, interval_lasts, interval_values, outfile=output_file)
 
     reloaded_df = Bedgraph.read(output_file)
 
@@ -112,7 +112,7 @@ end
 
 output_file = tempname() * ".bedgraph"
 info(output_file)
-bedgraph = Bedgraph.BedgraphData(header, tracks)
+bedgraph = Bedgraph.BedgraphData(header, intervals)
 
 try
     open(output_file, "w") do io
@@ -129,7 +129,7 @@ info(output_file)
 
 try
     open(output_file, "w") do io
-        write(io, Bedgraph.BedgraphData(Bedgraph.generateBasicHeader("chr19", tracks[1].chrom_start, tracks[end].chrom_end, bump_forward=false), tracks))
+        write(io, Bedgraph.BedgraphData(Bedgraph.generateBasicHeader("chr19", intervals[1].first, intervals[end].last, bump_forward=false), intervals))
     end
     # @test   readstring(file) ==  readstring(output_file) # differnces in float representation, but otherwise hold the same information.
     #TODO: explicitly test that files hold the same information.
@@ -145,22 +145,22 @@ end #testset
 @test Bedgraph.isComment(comment1)
 @test Bedgraph.isBrowser(browser3)
 
-@test Bedgraph.isLikeTrack("1 2 3 4") == false
-@test Bedgraph.isLikeTrack(parameter_line) == false
-@test Bedgraph.isLikeTrack(parameter_line_4) == false
-@test Bedgraph.isLikeTrack(parameter_line_min) == false
-@test Bedgraph.isLikeTrack(parameter_line_long) == false
-@test Bedgraph.isLikeTrack(line1) == true
-@test Bedgraph.isLikeTrack(line1_2) == true
-@test Bedgraph.isLikeTrack(line1_3) == true
-@test Bedgraph.isLikeTrack(line1_4) == true
-@test Bedgraph.isLikeTrack(line1_5) == true
-@test Bedgraph.isLikeTrack(line1_6) == true
-@test Bedgraph.isLikeTrack(line1_7) == true
+@test Bedgraph.isLikeInterval("1 2 3 4") == false
+@test Bedgraph.isLikeInterval(parameter_line) == false
+@test Bedgraph.isLikeInterval(parameter_line_4) == false
+@test Bedgraph.isLikeInterval(parameter_line_min) == false
+@test Bedgraph.isLikeInterval(parameter_line_long) == false
+@test Bedgraph.isLikeInterval(line1) == true
+@test Bedgraph.isLikeInterval(line1_2) == true
+@test Bedgraph.isLikeInterval(line1_3) == true
+@test Bedgraph.isLikeInterval(line1_4) == true
+@test Bedgraph.isLikeInterval(line1_5) == true
+@test Bedgraph.isLikeInterval(line1_6) == true
+@test Bedgraph.isLikeInterval(line1_7) == true
 
 
-@test Bedgraph.isLikeTrack(line_other_space) == true
-@test Bedgraph.isLikeTrack(line_other) == true
+@test Bedgraph.isLikeInterval(line_other_space) == true
+@test Bedgraph.isLikeInterval(line_other) == true
 
 end #testset
 
@@ -189,35 +189,35 @@ c1, c2, c3, c4 = Bedgraph._convertCells(Bedgraph._parseLine(line1))
 @test typeof(c3) <: Int
 @test typeof(c4) <: Real
 
-@test Track(line1) == track1
-@test convert(Track, line1) == track1
+@test Interval(line1) == interval1
+@test convert(Interval, line1) == interval1
 
-@test Track(cells1) == track1
-@test convert(Track, cells1) == track1
+@test Interval(cells1) == interval1
+@test convert(Interval, cells1) == interval1
 
-@test_throws MethodError convert(Track, String(line1, " ", "extra_cell")) #TODO: determine difference between MethodError and ErrorException.
-@test_throws ErrorException convert(Track, [cells1; "extra_cell"])
+@test_throws MethodError convert(Interval, String(line1, " ", "extra_cell")) #TODO: determine difference between MethodError and ErrorException.
+@test_throws ErrorException convert(Interval, [cells1; "extra_cell"])
 
-@test convert(Vector{Track}, chroms, chrom_starts, chrom_ends, data_values) == tracks
+@test convert(Vector{Interval}, chroms, interval_firsts, interval_lasts, interval_values) == intervals
 
 end #testset
 
 @testset "Internal Helpers" begin
 
-@test Bedgraph._range(track1) == track1.chrom_start : track1.chrom_end - 1
-@test Bedgraph._range(track1, right_open=false) == (track1.chrom_start + 1 ) : track1.chrom_end
+@test Bedgraph._range(interval1) == interval1.first : interval1.last - 1
+@test Bedgraph._range(interval1, right_open=false) == (interval1.first + 1 ) : interval1.last
 
-@test Bedgraph._range(tracks) == track1.chrom_start : Track(line9).chrom_end - 1
-@test Bedgraph._range(tracks, right_open=false) == track1.chrom_start + 1 : Track(line9).chrom_end
+@test Bedgraph._range(intervals) == interval1.first : Interval(line9).last - 1
+@test Bedgraph._range(intervals, right_open=false) == interval1.first + 1 : Interval(line9).last
 
 
-bumped_tracks = Bedgraph._bumpForward(tracks)
-@test bumped_tracks[1].chrom_start == (tracks[1].chrom_start + 1)
-@test bumped_tracks[1].chrom_end == (tracks[1].chrom_end + 1)
+bumped_intervals = Bedgraph._bumpForward(intervals)
+@test bumped_intervals[1].first == (intervals[1].first + 1)
+@test bumped_intervals[1].last == (intervals[1].last + 1)
 
-bumped_tracks = Bedgraph._bumpBack(tracks)
-@test bumped_tracks[1].chrom_start == (tracks[1].chrom_start - 1)
-@test bumped_tracks[1].chrom_end == (tracks[1].chrom_end - 1)
+bumped_intervals = Bedgraph._bumpBack(intervals)
+@test bumped_intervals[1].first == (intervals[1].first - 1)
+@test bumped_intervals[1].last == (intervals[1].last - 1)
 
 
 end #testset
@@ -225,26 +225,26 @@ end #testset
 @testset "Utilities" begin
 
 # Original expansion and compression test.
-(n, expanded_data_value) = Bedgraph.expand(chrom_starts, chrom_ends, data_values)
-(compressed_chrom_start,compressed_chrom_end,compressed_data_value) = Bedgraph.compress(n,expanded_data_value)
-@test chrom_starts == compressed_chrom_start
-@test chrom_ends == compressed_chrom_end
-@test data_values == compressed_data_value
+(n, expanded_value) = Bedgraph.expand(interval_firsts, interval_lasts, interval_values)
+(compressed_first, compressed_last, compressed_value) = Bedgraph.compress(n, expanded_value)
+@test interval_firsts == compressed_first
+@test interval_lasts == compressed_last
+@test interval_values == compressed_value
 
 # Expansion and compression test.
-n, expanded_data_value = Bedgraph.expand(tracks, right_open=true)
-compressed_tracks = Bedgraph.compress("chr19", n, expanded_data_value, right_open=true)
-@test compressed_tracks == tracks
+n, expanded_value = Bedgraph.expand(intervals, right_open=true)
+compressed_intervals = Bedgraph.compress("chr19", n, expanded_value, right_open=true)
+@test compressed_intervals == intervals
 
-# Expansion and compression of Tracks.
-n, expanded_data_value = Bedgraph.expand(tracks, right_open=false)
-compressed_tracks = Bedgraph.compress("chr19", n, expanded_data_value, right_open=false)
-@test compressed_tracks == tracks
+# Expansion and compression of Intervals.
+n, expanded_value = Bedgraph.expand(intervals, right_open=false)
+compressed_intervals = Bedgraph.compress("chr19", n, expanded_value, right_open=false)
+@test compressed_intervals == intervals
 
 # Expansion and compression of Arrays via convert.
-n, expanded_data_value = Bedgraph.expand("chr19", chrom_starts, chrom_ends, data_values)
-compressed_tracks = Bedgraph.compress("chr19", n, expanded_data_value)
-@test compressed_tracks == tracks
+n, expanded_value = Bedgraph.expand("chr19", interval_firsts, interval_lasts, interval_values)
+compressed_intervals = Bedgraph.compress("chr19", n, expanded_value)
+@test compressed_intervals == intervals
 
 end #testset
 
