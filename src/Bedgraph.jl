@@ -334,9 +334,12 @@ function generateBasicHeader(tracks::Vector{Track}; bump_forward=true) :: Vector
 
     chrom = tracks[1].chrom
 
+    pos_start = tracks[1].chrom_start
+    pos_end = tracks[end].chrom_end
+
     if bump_forward
-        pos_start = tracks[1].chrom_start + 1
-        pos_end = tracks[end].chrom_end + 1
+        pos_start = pos_start + 1
+        pos_end = pos_end + 1
     end
 
     return ["browser position $chrom:$pos_start-$pos_end", "track type=bedGraph"]
