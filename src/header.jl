@@ -16,16 +16,6 @@ function Base.convert(::Type{BedgraphHeader{Vector{String}}}, header::Vector{Str
     return BedgraphHeader(header)
 end
 
-function generateBasicHeader(chrom::String, pos_start::Int, pos_end::Int; bump_forward=true) :: Vector{String}
-
-    if bump_forward
-        pos_start += 1
-        pos_end += 1
-    end
-
-    return ["browser position $chrom:$pos_start-$pos_end", "track type=bedGraph"]
-end
-
 function generateBasicHeader(tracks::Vector{Track}; bump_forward=true) :: Vector{String}
 
     chrom = tracks[1].chrom
@@ -40,6 +30,8 @@ function generateBasicHeader(tracks::Vector{Track}; bump_forward=true) :: Vector
 
     return ["browser position $chrom:$pos_start-$pos_end", "track type=bedGraph"]
 end
+
+generateBasicHeader(chrom::String, pos_start::Int, pos_end::Int; bump_forward=true) = generateBasicHeader([Track(chrom, pos_start, pos_end,0)], bump_forward=bump_forward)
 
 function _readHeader(io) :: Vector{String}
     position(io) == 0 || seekstart(io)
