@@ -45,3 +45,19 @@ function _convertCells(cells::Vector{String})
     length(cells) == 4 || error("Poor formatting:", cells)
     return cells[1], parse(Int, cells[2]), parse(Int, cells[3]), parse(Float64, cells[4]) #TODO: parse cell 4 as a generic Real.
 end
+
+function chrom(record::Track)::String
+    return record.chrom
+end
+
+function chromstart(record::Track)::Int
+    return record.chromstart
+end
+
+function chromend(record::Track)::Int
+    return record.chromend
+end
+
+function value(record::Track)::Real
+    return record.value
+end
