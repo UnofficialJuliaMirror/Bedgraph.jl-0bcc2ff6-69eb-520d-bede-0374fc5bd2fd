@@ -27,7 +27,7 @@ function Track(data::String)
     return convert(Track, data)
 end
 
-function Base.convert(::Type{Track}, str::String)
+function Base.convert(::Type{Track}, str::AbstractString)
     data = _parseLine(str)
     return convert(Track, data)
 end
