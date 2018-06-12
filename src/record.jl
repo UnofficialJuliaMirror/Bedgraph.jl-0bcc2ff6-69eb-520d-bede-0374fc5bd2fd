@@ -1,9 +1,5 @@
 export Track
 
-# Orthogonality.
-nucleotides(n::UnitRange{Int}) = collect(n) #Note: to me it feels unreasonable to collect a range.
-
-
 mutable struct Track
     chrom::String
     chrom_start::Int

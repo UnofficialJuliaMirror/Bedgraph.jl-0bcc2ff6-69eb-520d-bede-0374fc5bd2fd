@@ -52,7 +52,6 @@ function Base.read{T}(io::IO, ::Type{BedgraphHeader{T}})
     return BedgraphHeader(_readHeader(io))
 end
 
-
 function Base.write(io::IO, header::BedgraphHeader{Vector{String}})
     return Base.write(io, convert(String, header))
 end
