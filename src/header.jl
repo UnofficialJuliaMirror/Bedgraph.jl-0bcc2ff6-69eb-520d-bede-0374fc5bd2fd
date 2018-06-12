@@ -2,12 +2,6 @@ mutable struct BedgraphHeader{T} #TODO: determine what and how this will be.
     data::T
 end
 
-struct BedgraphData
-    header::BedgraphHeader
-    tracks::Vector{Track}
-    BedgraphData(header, tracks) = new(BedgraphHeader(header), tracks) #TODO improve.
-end
-
 function Base.convert{T<:Vector{String}}(::Type{String}, header::BedgraphHeader{T}) :: String
 
     str = ""
@@ -16,6 +10,10 @@ function Base.convert{T<:Vector{String}}(::Type{String}, header::BedgraphHeader{
     end
 
     return str
+end
+
+function Base.convert(::Type{BedgraphHeader{Vector{String}}}, header::Vector{String})
+    return BedgraphHeader(header)
 end
 
 function generateBasicHeader(chrom::String, pos_start::Int, pos_end::Int; bump_forward=true) :: Vector{String}
@@ -43,7 +41,7 @@ function generateBasicHeader(tracks::Vector{Track}; bump_forward=true) :: Vector
     return ["browser position $chrom:$pos_start-$pos_end", "track type=bedGraph"]
 end
 
-function readHeader(io) :: Vector{String}
+function _readHeader(io) :: Vector{String}
     position(io) == 0 || seekstart(io)
 
     header = String[]
@@ -58,6 +56,11 @@ function readHeader(io) :: Vector{String}
 
 end
 
-function Base.write(io::IO, header::BedgraphHeader)
+function Base.read{T}(io::IO, ::Type{BedgraphHeader{T}})
+    return BedgraphHeader(_readHeader(io))
+end
+
+
+function Base.write(io::IO, header::BedgraphHeader{Vector{String}})
     return Base.write(io, convert(String, header))
 end

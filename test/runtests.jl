@@ -77,12 +77,14 @@ end
 
 open(file, "r") do io # Note: reading tracks first to check seek.
     @test Bedgraph.readTracks(io) ==  tracks
-    @test Bedgraph.readHeader(io) == header
+	@test Bedgraph._readHeader(io) == header
+	@test read(io, Bedgraph.BedgraphHeader{Vector{String}}).data == header
 end
 
 open(file_headerless, "r") do io # Note: reading tracks first to check seek.
     @test Bedgraph.readTracks(io) == tracks
-    @test Bedgraph.readHeader(io) == []
+	@test Bedgraph._readHeader(io) == []
+    @test read(io, Bedgraph.BedgraphHeader{Vector{String}}).data == []
 end
 
 # Read test.
@@ -112,11 +114,11 @@ end
 
 output_file = tempname() * ".bedgraph"
 info(output_file)
-bedgraph = Bedgraph.BedgraphData(header, tracks)
+header = Bedgraph.BedgraphHeader(Bedgraph.generateBasicHeader(tracks))
 
 try
     open(output_file, "w") do io
-        write(io, bedgraph)
+        write(io, header, tracks)
     end
     # @test   readstring(file) ==  readstring(output_file) # differnces in float representation, but otherwise hold the same information.
     #TODO: explicitly test that files hold the same information.
@@ -129,7 +131,7 @@ info(output_file)
 
 try
     open(output_file, "w") do io
-        write(io, Bedgraph.BedgraphData(Bedgraph.generateBasicHeader("chr19", tracks[1].chrom_start, tracks[end].chrom_end, bump_forward=false), tracks))
+        write(io, Bedgraph.BedgraphHeader(Bedgraph.generateBasicHeader("chr19", tracks[1].chrom_start, tracks[end].chrom_end, bump_forward=false)), tracks)
     end
     # @test   readstring(file) ==  readstring(output_file) # differnces in float representation, but otherwise hold the same information.
     #TODO: explicitly test that files hold the same information.
