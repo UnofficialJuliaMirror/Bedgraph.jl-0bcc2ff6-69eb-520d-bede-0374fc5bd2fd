@@ -45,7 +45,7 @@ function Base.write(io::IO, track::Track)
     return Base.write(io, string(track.chrom, delim, track.chrom_start, delim, track.chrom_end, delim, track.data_value))
 end
 
-function Base.write(io::IO, bedgraph::BedgraphData)
-    Base.write(io, bedgraph.header)
-    Base.write(io, bedgraph.tracks)
+function Base.write(io::IO, header::BedgraphHeader{Vector{String}}, tracks::Vector{Track})
+    Base.write(io, header)
+    Base.write(io, tracks)
 end
