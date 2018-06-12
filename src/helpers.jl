@@ -1,3 +1,6 @@
+# Orthogonality.
+nucleotides(n::UnitRange{Int}) = collect(n) #Note: to me it feels unreasonable to collect a range.
+
 function _bump(tracks::Vector{Track}, b::Int) :: Vector{Track}
 
     new_tracks = Vector{Track}()
