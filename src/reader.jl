@@ -12,7 +12,7 @@ function isComment(line::String) :: Bool
 end
 
 
-function seekNextRecord(io) :: Nothing
+function seekNextRecord(io::IO) :: Nothing
     seekstart(io)
 
     pos = position(io)
@@ -30,7 +30,7 @@ function seekNextRecord(io) :: Nothing
 end
 
 # Note: all options are placed in a single line separated by spaces.
-function readParameters(io) :: String
+function readParameters(io::IO) :: String
     seekstart(io)
 
     pos = position(io)
@@ -45,9 +45,7 @@ function readParameters(io) :: String
     end
 end
 
-
-
-function readRecords(io) :: Vector{Record}
+function readRecords(io::IO) :: Vector{Record}
     seekNextRecord(io)
 
     records = Vector{Record}()
