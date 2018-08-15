@@ -2,14 +2,14 @@ export Record
 
 struct Record
     chrom::String
-    chrom_start::Int
+    first::Int
     chrom_end::Int
     value::Real
 end
 
 function Base.:(==)(a::Record, b::Record)
     return a.chrom  == b.chrom &&
-           a.chrom_start == b.chrom_start &&
+           a.first == b.first &&
            a.chrom_end == b.chrom_end &&
            a.value == b.value
 end
@@ -46,8 +46,8 @@ function chrom(record::Record)::String
     return record.chrom
 end
 
-function chromstart(record::Record)::Int
-    return record.chromstart
+function Base.first(record::Record)::Int
+    return record.first
 end
 
 function chromend(record::Record)::Int

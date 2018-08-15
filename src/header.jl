@@ -20,7 +20,7 @@ function generateBasicHeader(records::Vector{Record}; bump_forward=true) :: Vect
 
     chrom = records[1].chrom
 
-    pos_start = records[1].chrom_start
+    pos_start = records[1].first
     pos_end = records[end].chrom_end
 
     if bump_forward

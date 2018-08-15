@@ -5,7 +5,7 @@ using Test
 module Bag
 using Bedgraph
 const chroms = ["chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19"]
-const chrom_starts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
+const firsts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
 const chrom_ends = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
 const values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
@@ -98,7 +98,7 @@ df = Bedgraph.read(Bag.file)
 @test size(df) == (9,4)
 
 @test df[:chrom] == Bag.chroms
-@test df[:chrom_start] == Bag.chrom_starts
+@test df[:first] == Bag.firsts
 @test df[:chrom_end] == Bag.chrom_ends
 @test df[:value] == Bag.values
 
@@ -107,7 +107,7 @@ outputfile1 = tempname() * ".bedgraph"
 @info "outputfile:" outputfile1
 
 try
-    Bedgraph.write(Bag.chroms, Bag.chrom_starts, Bag.chrom_ends, Bag.values, outfile=outputfile1)
+    Bedgraph.write(Bag.chroms, Bag.firsts, Bag.chrom_ends, Bag.values, outfile=outputfile1)
 
     reloaded_df = Bedgraph.read(outputfile1)
 
@@ -136,7 +136,7 @@ outputfile3 = tempname() * ".bedgraph"
 
 try
     open(outputfile3, "w") do io
-        header = Bedgraph.BedgraphHeader(Bedgraph.generateBasicHeader("chr19", Bag.records[1].chrom_start, Bag.records[end].chrom_end, bump_forward=false))
+        header = Bedgraph.BedgraphHeader(Bedgraph.generateBasicHeader("chr19", Bag.records[1].first, Bag.records[end].chrom_end, bump_forward=false))
         write(io, header, Bag.records)
     end
     # @test   readstring(Bag.file) ==  readstring(outputfile) # differnces in float representation, but otherwise hold the same information.
@@ -206,25 +206,25 @@ c1, c2, c3, c4 = Bedgraph._convertCells(Bedgraph._splitLine(Bag.line1))
 @test_throws MethodError convert(Record, String(Bag.line1, " ", "extra_cell")) #TODO: determine difference between MethodError and ErrorException.
 @test_throws ErrorException convert(Record, [Bag.cells1; "extra_cell"])
 
-@test convert(Vector{Record}, Bag.chroms, Bag.chrom_starts, Bag.chrom_ends, Bag.values) == Bag.records
+@test convert(Vector{Record}, Bag.chroms, Bag.firsts, Bag.chrom_ends, Bag.values) == Bag.records
 
 end #testset Conversion
 
 @testset "Internal Helpers" begin
 
-@test Bedgraph._range(Bag.record1) == Bag.record1.chrom_start : Bag.record1.chrom_end - 1
-@test Bedgraph._range(Bag.record1, right_open=false) == (Bag.record1.chrom_start + 1 ) : Bag.record1.chrom_end
+@test Bedgraph._range(Bag.record1) == Bag.record1.first : Bag.record1.chrom_end - 1
+@test Bedgraph._range(Bag.record1, right_open=false) == (Bag.record1.first + 1 ) : Bag.record1.chrom_end
 
-@test Bedgraph._range(Bag.records) == Bag.record1.chrom_start : Record(Bag.line9).chrom_end - 1
-@test Bedgraph._range(Bag.records, right_open=false) == Bag.record1.chrom_start + 1 : Record(Bag.line9).chrom_end
+@test Bedgraph._range(Bag.records) == Bag.record1.first : Record(Bag.line9).chrom_end - 1
+@test Bedgraph._range(Bag.records, right_open=false) == Bag.record1.first + 1 : Record(Bag.line9).chrom_end
 
 
 bumped_records = Bedgraph._bumpForward(Bag.records)
-@test bumped_records[1].chrom_start == (Bag.records[1].chrom_start + 1)
+@test bumped_records[1].first == (Bag.records[1].first + 1)
 @test bumped_records[1].chrom_end == (Bag.records[1].chrom_end + 1)
 
 bumped_records = Bedgraph._bumpBack(Bag.records)
-@test bumped_records[1].chrom_start == (Bag.records[1].chrom_start - 1)
+@test bumped_records[1].first == (Bag.records[1].first - 1)
 @test bumped_records[1].chrom_end == (Bag.records[1].chrom_end - 1)
 
 
@@ -233,9 +233,9 @@ end #testset Internal Helpers
 @testset "Utilities" begin
 
 # Original expansion and compression test.
-(n, expanded_value) = Bedgraph.expand(Bag.chrom_starts, Bag.chrom_ends, Bag.values)
-(compressed_chrom_start,compressed_chrom_end,compressed_value) = Bedgraph.compress(n,expanded_value)
-@test Bag.chrom_starts == compressed_chrom_start
+(n, expanded_value) = Bedgraph.expand(Bag.firsts, Bag.chrom_ends, Bag.values)
+(compressed_first,compressed_chrom_end,compressed_value) = Bedgraph.compress(n,expanded_value)
+@test Bag.firsts == compressed_first
 @test Bag.chrom_ends == compressed_chrom_end
 @test Bag.values == compressed_value
 
@@ -250,7 +250,7 @@ compressed_records = Bedgraph.compress("chr19", n, expanded_value, right_open=fa
 @test compressed_records == Bag.records
 
 # Expansion and compression of Arrays via convert.
-n, expanded_value = Bedgraph.expand("chr19", Bag.chrom_starts, Bag.chrom_ends, Bag.values)
+n, expanded_value = Bedgraph.expand("chr19", Bag.firsts, Bag.chrom_ends, Bag.values)
 compressed_records = Bedgraph.compress("chr19", n, expanded_value)
 @test compressed_records == Bag.records
 

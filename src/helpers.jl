@@ -3,7 +3,7 @@ function _bump(records::Vector{Record}, b::Int) :: Vector{Record}
     new_records = Vector{Record}()
 
     for record in records
-        new_record  = Record(record.chrom, record.chrom_start + b, record.chrom_end + b, record.value)
+        new_record  = Record(record.chrom, record.first + b, record.chrom_end + b, record.value)
         push!(new_records, new_record)
     end
 
@@ -14,7 +14,7 @@ _bumpBack(records::Vector{Record}) = _bump(records, -1)
 
 function _range(record::Record; right_open=true) :: UnitRange{Int}
 
-    pos_start = right_open ? record.chrom_start : record.chrom_start + 1
+    pos_start = right_open ? record.first : record.first + 1
     pos_end = right_open ? record.chrom_end - 1 : record.chrom_end
 
     return pos_start : pos_end
@@ -30,15 +30,15 @@ end
 
 
 
-function Base.convert(::Type{Vector{Record}}, chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, values::Vector{T}) where {T<:Real}
+function Base.convert(::Type{Vector{Record}}, chroms::Vector{String}, firsts::Vector{Int}, chrom_ends::Vector{Int}, values::Vector{T}) where {T<:Real}
 
     # Check that arrays are of equal length.
-    length(chroms) == length(chrom_starts) && length(chrom_ends) == length(values) && length(chroms) == length(values) || error("Vectors are of unequal lengths: chroms=$(length(chroms)), chrom_starts=$(length(chrom_starts)), chrom_ends=$(length(chrom_ends)), values=$(length(values))")
+    length(chroms) == length(firsts) && length(chrom_ends) == length(values) && length(chroms) == length(values) || error("Vectors are of unequal lengths: chroms=$(length(chroms)), firsts=$(length(firsts)), chrom_ends=$(length(chrom_ends)), values=$(length(values))")
 
     records = Vector{Record}()
 
-    for (chrom, chrom_start, chrom_end, value) in zip(chroms, chrom_starts, chrom_ends, values)
-        push!(records,  Record(chrom, chrom_start, chrom_end, value))
+    for (chrom, first, chrom_end, value) in zip(chroms, firsts, chrom_ends, values)
+        push!(records,  Record(chrom, first, chrom_end, value))
     end
 
     return records
@@ -95,13 +95,13 @@ compress(chrom::String, n::Vector{Int}, values::Vector{T}; right_open = true, bu
 function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real} #TODO: deprecate.
 
     # chrom::Vector{String} = []
-    chrom_starts::Vector{Int} = []
+    firsts::Vector{Int} = []
     chrom_ends::Vector{Int} = []
     values::Vector{Real} = []
 
     # Start inital record.
     # push!(chrom, c[1])
-    push!(chrom_starts, n[1])
+    push!(firsts, n[1])
 
     previous_value = v[1]
 
@@ -121,7 +121,7 @@ function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real} #TODO: deprecate
             # push!(chrom, c[1])
 
             # Push record start.
-            push!(chrom_starts, n[state-1])
+            push!(firsts, n[state-1])
 
             previous_value = value
         end
@@ -137,8 +137,8 @@ function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real} #TODO: deprecate
         end
     end
 
-    # return (chrom, chrom_start, chrom_end, value)
-    return (chrom_starts, chrom_ends, values)
+    # return (chrom, first, chrom_end, value)
+    return (firsts, chrom_ends, values)
 end
 
 compress(n, v) =  compress(collect(n), v)
@@ -166,21 +166,21 @@ function expand(records::Vector{Record}; right_open=true, bump_forward=true)
     return collect(total_range), values, chroms
 end
 
-function expand(chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, values::Vector{T}) where {T<:Real} #TODO: deprecate.
+function expand(firsts::Vector{Int}, chrom_ends::Vector{Int}, values::Vector{T}) where {T<:Real} #TODO: deprecate.
 
     # Check that array are of equal length.
-    if length(chrom_starts) != length(chrom_ends) || length(chrom_ends) != length(values)
-        error("Unequal lengths: chrom_starts=$(length(chrom_starts)), chrom_ends=$(length(chrom_ends)), values=$(length(values))")
+    if length(firsts) != length(chrom_ends) || length(chrom_ends) != length(values)
+        error("Unequal lengths: firsts=$(length(firsts)), chrom_ends=$(length(chrom_ends)), values=$(length(values))")
     end
 
-    nucleotides = chrom_starts[1] : chrom_ends[end]
+    nucleotides = firsts[1] : chrom_ends[end]
     new_values = zeros(T, length(nucleotides))
 
     slide = nucleotides[1] - 1
 
     for n = 1:length(values)
 
-        nStart = chrom_starts[n] - slide
+        nStart = firsts[n] - slide
         nEnd = chrom_ends[n] - slide
 
         # if left value is greater start + 1.
@@ -196,5 +196,5 @@ function expand(chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, values::Vect
     return (nucleotides, new_values)
 end
 
-expand(chrom::String, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( fill(chrom, length(chrom_starts)), chrom_starts, chrom_ends, values, right_open=right_open, bump_forward=bump_forward)
-expand(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( convert(Vector{Record}, chroms, chrom_starts, chrom_ends, values), right_open=right_open, bump_forward=bump_forward)
+expand(chrom::String, firsts::Vector{Int}, chrom_ends::Vector{Int}, values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( fill(chrom, length(firsts)), firsts, chrom_ends, values, right_open=right_open, bump_forward=bump_forward)
+expand(chroms::Vector{String}, firsts::Vector{Int}, chrom_ends::Vector{Int}, values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( convert(Vector{Record}, chroms, firsts, chrom_ends, values), right_open=right_open, bump_forward=bump_forward)
