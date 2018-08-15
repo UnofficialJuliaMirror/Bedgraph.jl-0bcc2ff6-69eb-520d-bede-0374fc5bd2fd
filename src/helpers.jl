@@ -1,6 +1,3 @@
-# Orthogonality.
-nucleotides(n::UnitRange{Int}) = collect(n) #Note: to me it feels unreasonable to collect a range.
-
 function _bump(tracks::Vector{Track}, b::Int) :: Vector{Track}
 
     new_tracks = Vector{Track}()
@@ -38,12 +35,10 @@ function Base.convert(::Type{Vector{Track}}, chroms::Vector{String}, chrom_start
     # Check that arrays are of equal length.
     length(chroms) == length(chrom_starts) && length(chrom_ends) == length(data_values) && length(chroms) == length(data_values) || error("Vectors are of unequal lengths: chroms=$(length(chroms)), chrom_starts=$(length(chrom_starts)), chrom_ends=$(length(chrom_ends)), data_values=$(length(data_values))")
 
-    N = length(chroms)
+    tracks = Vector{Track}()
 
-    tracks = Vector{Track}(N)
-
-    for i in 1:N
-        tracks[i] = Track(chroms[i], chrom_starts[i], chrom_ends[i], data_values[i])
+    for (chrom, chrom_start, chrom_end, data_value) in zip(chroms, chrom_starts, chrom_ends, data_values)
+        push!(tracks,  Track(chrom, chrom_start, chrom_end, data_value))
     end
 
     return tracks
@@ -110,9 +105,9 @@ function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real} #TODO: deprecate
 
     previous_value = v[1]
 
-    state = start(v)
-    while !done(v, state)
-        (value, state) = next(v, state)
+    next = iterate(v)
+    while next !== nothing
+        (value, state) = next
 
         # Finish current track and start new track if value has changed.
         if value != previous_value
@@ -131,8 +126,9 @@ function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real} #TODO: deprecate
             previous_value = value
         end
 
-        if done(v, state)
+        next = iterate(v, state)
 
+        if next == nothing
             # Push final track end.
             push!(chrom_ends, n[state-1])
 
@@ -145,7 +141,7 @@ function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real} #TODO: deprecate
     return (chrom_starts, chrom_ends, data_values)
 end
 
-compress(n, v) =  compress(nucleotides(n), v)
+compress(n, v) =  compress(collect(n), v)
 
 
 
@@ -159,12 +155,12 @@ function expand(tracks::Vector{Track}; right_open=true, bump_forward=true)
 
     total_range =_range(tracks, right_open = right_open)
 
-    values = Vector{Float64}(length(total_range))
-    chroms = Vector{String}(length(total_range))
+    values = Vector{Float64}(undef, length(total_range))
+    chroms = Vector{String}(undef, length(total_range))
 
     for track in tracks
-        values[findin(total_range, _range(track, right_open = right_open))] = track.data_value
-        chroms[findin(total_range, _range(track, right_open = right_open))] = track.chrom
+        values[indexin(_range(track, right_open = right_open), total_range)] .= track.data_value
+        chroms[indexin(_range(track, right_open = right_open), total_range)] .= track.chrom
     end
 
     return collect(total_range), values, chroms
@@ -178,7 +174,7 @@ function expand(chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values:
     end
 
     nucleotides = chrom_starts[1] : chrom_ends[end]
-    values = zeros(length(nucleotides))
+    values = zeros(T, length(nucleotides))
 
     slide = nucleotides[1] - 1
 
@@ -194,7 +190,7 @@ function expand(chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values:
             end
         end
 
-        values[nStart:nEnd] = data_values[n]
+        values[nStart : nEnd] .= data_values[n]
     end
 
     return (nucleotides, values)

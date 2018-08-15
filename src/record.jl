@@ -1,9 +1,5 @@
 export Track
 
-# Orthogonality.
-nucleotides(n::UnitRange{Int}) = collect(n) #Note: to me it feels unreasonable to collect a range.
-
-
 struct Track
     chrom::String
     chrom_start::Int
@@ -32,12 +28,12 @@ function Track(data::String)
 end
 
 function Base.convert(::Type{Track}, str::AbstractString)
-    data = _parseLine(str)
+    data = _splitLine(str)
     return convert(Track, data)
 end
 
 ## Internal helper functions.
-function _parseLine(line::String) ::Vector{String}
+function _splitLine(line::String) ::Vector{String}
     cells::Vector{String} = filter!(!isempty, split(line, r"\s"))
 end
 

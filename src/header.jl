@@ -2,7 +2,7 @@ mutable struct BedgraphHeader{T} #TODO: determine what and how this will be.
     data::T
 end
 
-function Base.convert{T<:Vector{String}}(::Type{String}, header::BedgraphHeader{T}) :: String
+function Base.convert(::Type{String}, header::BedgraphHeader{T}) :: String where T<:Vector{String}
 
     str = ""
     for line in header.data
@@ -48,7 +48,7 @@ function _readHeader(io) :: Vector{String}
 
 end
 
-function Base.read{T}(io::IO, ::Type{BedgraphHeader{T}})
+function Base.read(io::IO, ::Type{BedgraphHeader{T}}) where T
     return BedgraphHeader(_readHeader(io))
 end
 
