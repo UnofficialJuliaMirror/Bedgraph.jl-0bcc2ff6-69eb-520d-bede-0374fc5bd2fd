@@ -1,9 +1,9 @@
-# chrom  chrom_start  chrom_end  data_value
-function write(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T} ; outfile="out.bedgraph") where {T<:Real} #TODO: deprecate
+# chrom  chrom_start  chrom_end  value
+function write(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, values::Vector{T} ; outfile="out.bedgraph") where {T<:Real} #TODO: deprecate
 
     # Check that array are of equal length.
-    if length(chroms) != length(chrom_starts) || length(chrom_ends) != length(data_values) || length(chroms) != length(data_values)
-        error("Unequal lengths: chroms=$(length(chroms)), chrom_starts=$(length(chrom_starts)), chrom_ends=$(length(chrom_ends)), data_values=$(length(data_values))")
+    if length(chroms) != length(chrom_starts) || length(chrom_ends) != length(values) || length(chroms) != length(values)
+        error("Unequal lengths: chroms=$(length(chroms)), chrom_starts=$(length(chrom_starts)), chrom_ends=$(length(chrom_ends)), values=$(length(values))")
     end
 
     open(outfile, "w") do f
@@ -23,7 +23,7 @@ function write(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Ve
             Base.write(f, "\t")
 
             # Write data value.
-            Base.write(f, string(data_values[i]))
+            Base.write(f, string(values[i]))
             Base.write(f, "\n")
         end
 
@@ -31,7 +31,7 @@ function write(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Ve
 
 end
 
-write(c, chrom_starts, chrom_ends, data_values; outfile="out.bedgraph" ) =  write(chrom(c), chrom_starts, chrom_ends, data_values; outfile="out.bedgraph") #TODO: deprecate
+write(c, chrom_starts, chrom_ends, values; outfile="out.bedgraph" ) =  write(chrom(c), chrom_starts, chrom_ends, values; outfile="out.bedgraph") #TODO: deprecate
 
 function Base.write(io::IO, records::Vector{Record}) #Note: we assume the indexes have been bumpped and the open ends are correct.
     for record in records
@@ -42,7 +42,7 @@ end
 function Base.write(io::IO, record::Record)
     # delim = '\t'
     delim = ' '
-    return Base.write(io, string(record.chrom, delim, record.chrom_start, delim, record.chrom_end, delim, record.data_value))
+    return Base.write(io, string(record.chrom, delim, record.chrom_start, delim, record.chrom_end, delim, record.value))
 end
 
 function Base.write(io::IO, header::BedgraphHeader{Vector{String}}, records::Vector{Record})

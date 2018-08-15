@@ -61,9 +61,9 @@ using Bedgraph
 const chroms = ["chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19"]
 const chrom_starts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
 const chrom_ends = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
-const data_values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
+const values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
-Bedgraph.write(chroms, chrom_starts, chrom_ends, data_values, outfile="data.bedgraph")
+Bedgraph.write(chroms, chrom_starts, chrom_ends, values, outfile="data.bedgraph")
 ```
 
 
@@ -86,9 +86,9 @@ Compress data to chromosome coordinates of the zero-based, half-open format.
 using Bedgraph
 
 n = 49302000:49304700
-expanded_data_values = [-1.0,-1.0,-1.0, ..., 1.00, 1.00, 1.00]
+expanded_values = [-1.0,-1.0,-1.0, ..., 1.00, 1.00, 1.00]
 
-(compressed_chrom_starts,compressed_chrom_ends,compressed_data_values) = Bedgraph.compress(n,expanded_data_values)
+(compressed_chrom_starts,compressed_chrom_ends,compressed_values) = Bedgraph.compress(n,expanded_values)
 ```
 
 ```julia
@@ -96,7 +96,7 @@ using Bedgraph
 
 const records = [Record("chr19", 49302000, 49302300, -1.0), Record("chr19", 49302300, 49302600, -1.75)]
 
-compressed_records = Bedgraph.compress("chr19", n, expanded_data_value)
+compressed_records = Bedgraph.compress("chr19", n, expanded_value)
 ```
 
 #### Expand record data
@@ -107,9 +107,9 @@ using Bedgraph
 
 const chrom_starts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
 const chrom_ends = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
-const data_values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
+const values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
-(n, expanded_data_values) = Bedgraph.expand(chrom_starts, chrom_ends, data_values)
+(n, expanded_values) = Bedgraph.expand(chrom_starts, chrom_ends, values)
 ```
 
 ```julia
@@ -118,5 +118,5 @@ using Bedgraph
 
 const records = [Record("chr19", 49302000, 49302300, -1.0), Record("chr19", 49302300, 49302600, -1.75)]
 
-n, expanded_data_values = Bedgraph.expand(records)
+n, expanded_values = Bedgraph.expand(records)
 ```

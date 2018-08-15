@@ -4,14 +4,14 @@ struct Record
     chrom::String
     chrom_start::Int
     chrom_end::Int
-    data_value::Real
+    value::Real
 end
 
 function Base.:(==)(a::Record, b::Record)
     return a.chrom  == b.chrom &&
            a.chrom_start == b.chrom_start &&
            a.chrom_end == b.chrom_end &&
-           a.data_value == b.data_value
+           a.value == b.value
 end
 
 function Record(data::Vector{String})
