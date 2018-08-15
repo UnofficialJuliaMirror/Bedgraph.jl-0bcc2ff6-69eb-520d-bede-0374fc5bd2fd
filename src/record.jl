@@ -1,35 +1,35 @@
-export Track
+export Record
 
-struct Track
+struct Record
     chrom::String
     chrom_start::Int
     chrom_end::Int
     data_value::Real
 end
 
-function Base.:(==)(a::Track, b::Track)
+function Base.:(==)(a::Record, b::Record)
     return a.chrom  == b.chrom &&
            a.chrom_start == b.chrom_start &&
            a.chrom_end == b.chrom_end &&
            a.data_value == b.data_value
 end
 
-function Track(data::Vector{String})
-    return convert(Track, data)
+function Record(data::Vector{String})
+    return convert(Record, data)
 end
 
-function Base.convert(::Type{Track}, data::Vector{String})
+function Base.convert(::Type{Record}, data::Vector{String})
     c1, c2, c3, c4 = _convertCells(data)
-    return Track(c1, c2, c3, c4)
+    return Record(c1, c2, c3, c4)
 end
 
-function Track(data::String)
-    return convert(Track, data)
+function Record(data::String)
+    return convert(Record, data)
 end
 
-function Base.convert(::Type{Track}, str::AbstractString)
+function Base.convert(::Type{Record}, str::AbstractString)
     data = _splitLine(str)
-    return convert(Track, data)
+    return convert(Record, data)
 end
 
 ## Internal helper functions.
@@ -42,18 +42,18 @@ function _convertCells(cells::Vector{String})
     return cells[1], parse(Int, cells[2]), parse(Int, cells[3]), parse(Float64, cells[4]) #TODO: parse cell 4 as a generic Real.
 end
 
-function chrom(record::Track)::String
+function chrom(record::Record)::String
     return record.chrom
 end
 
-function chromstart(record::Track)::Int
+function chromstart(record::Record)::Int
     return record.chromstart
 end
 
-function chromend(record::Track)::Int
+function chromend(record::Record)::Int
     return record.chromend
 end
 
-function value(record::Track)::Real
+function value(record::Record)::Real
     return record.value
 end

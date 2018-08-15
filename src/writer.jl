@@ -33,19 +33,19 @@ end
 
 write(c, chrom_starts, chrom_ends, data_values; outfile="out.bedgraph" ) =  write(chrom(c), chrom_starts, chrom_ends, data_values; outfile="out.bedgraph") #TODO: deprecate
 
-function Base.write(io::IO, tracks::Vector{Track}) #Note: we assume the indexes have been bumpped and the open ends are correct.
-    for track in tracks
-        Base.write(io, track, '\n')
+function Base.write(io::IO, records::Vector{Record}) #Note: we assume the indexes have been bumpped and the open ends are correct.
+    for record in records
+        Base.write(io, record, '\n')
     end
 end
 
-function Base.write(io::IO, track::Track)
+function Base.write(io::IO, record::Record)
     # delim = '\t'
     delim = ' '
-    return Base.write(io, string(track.chrom, delim, track.chrom_start, delim, track.chrom_end, delim, track.data_value))
+    return Base.write(io, string(record.chrom, delim, record.chrom_start, delim, record.chrom_end, delim, record.data_value))
 end
 
-function Base.write(io::IO, header::BedgraphHeader{Vector{String}}, tracks::Vector{Track})
+function Base.write(io::IO, header::BedgraphHeader{Vector{String}}, records::Vector{Record})
     Base.write(io, header)
-    Base.write(io, tracks)
+    Base.write(io, records)
 end

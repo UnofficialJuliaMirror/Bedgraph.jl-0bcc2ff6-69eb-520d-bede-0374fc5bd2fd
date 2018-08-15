@@ -44,7 +44,7 @@ const line1_7 = "chr19 49302000 49302300 -1.0    " # tab at end.
 
 const cells1 = ["chr19", "49302000", "49302300", "-1.0"]
 
-const track1 = Track("chr19", 49302000, 49302300, -1.0)
+const record1 = Record("chr19", 49302000, 49302300, -1.0)
 
 const parameter_line_min = "track type=bedGraph"
 const parameter_line = "track type=bedGraph name=\"BedGraph Format\" description=\"BedGraph format\" visibility=full color=200,100,0 altColor=0,100,200 priority=20"
@@ -55,7 +55,7 @@ const file = joinpath(@__DIR__, "data.bedgraph")
 const file_headerless = joinpath(@__DIR__, "data-headerless.bedgraph")
 
 const header = [browser1, browser2, browser3, browser4, comment1, comment2, comment3, comment4, parameter_line]
-const tracks = [track1, Track(line2), Track(line3), Track(line4), Track(line5), Track(line6), Track(line7), Track(line8), Track(line9)]
+const records = [record1, Record(line2), Record(line3), Record(line4), Record(line5), Record(line6), Record(line7), Record(line8), Record(line9)]
 
 end # module bag
 
@@ -68,26 +68,26 @@ end # module bag
 
 # Seek test.
 open(Bag.file, "r") do io
-    Bedgraph.seekNextTrack(io)
+    Bedgraph.seekNextRecord(io)
     @test position(io) == 532
     @test readline(io) == Bag.line1
 end
 
 # Check things for headerless Bag.files.
 open(Bag.file_headerless, "r") do io
-    Bedgraph.seekNextTrack(io)
+    Bedgraph.seekNextRecord(io)
     @test position(io) == 0
     @test readline(io) == Bag.line1
 end
 
-open(Bag.file, "r") do io # Note: reading tracks first to check seek.
-    @test Bedgraph.readTracks(io) ==  Bag.tracks
+open(Bag.file, "r") do io # Note: reading records first to check seek.
+    @test Bedgraph.readRecords(io) ==  Bag.records
 	@test Bedgraph._readHeader(io) == Bag.header
 	@test read(io, Bedgraph.BedgraphHeader{Vector{String}}).data == Bag.header
 end
 
-open(Bag.file_headerless, "r") do io # Note: reading tracks first to check seek.
-    @test Bedgraph.readTracks(io) == Bag.tracks
+open(Bag.file_headerless, "r") do io # Note: reading records first to check seek.
+    @test Bedgraph.readRecords(io) == Bag.records
 	@test Bedgraph._readHeader(io) == []
     @test read(io, Bedgraph.BedgraphHeader{Vector{String}}).data == []
 end
@@ -119,11 +119,11 @@ end
 
 outputfile2 = tempname() * ".bedgraph"
 @info "outputfile:" outputfile2
-header = Bedgraph.BedgraphHeader(Bedgraph.generateBasicHeader(Bag.tracks))
+header = Bedgraph.BedgraphHeader(Bedgraph.generateBasicHeader(Bag.records))
 
 try
     open(outputfile2, "w") do io
-        write(io, header, Bag.tracks)
+        write(io, header, Bag.records)
     end
     # @test   readstring(Bag.file) ==  readstring(outputfile) # differnces in float representation, but otherwise hold the same information.
     #TODO: explicitly test that Bag.files hold the same information.
@@ -136,8 +136,8 @@ outputfile3 = tempname() * ".bedgraph"
 
 try
     open(outputfile3, "w") do io
-        header = Bedgraph.BedgraphHeader(Bedgraph.generateBasicHeader("chr19", Bag.tracks[1].chrom_start, Bag.tracks[end].chrom_end, bump_forward=false))
-        write(io, header, Bag.tracks)
+        header = Bedgraph.BedgraphHeader(Bedgraph.generateBasicHeader("chr19", Bag.records[1].chrom_start, Bag.records[end].chrom_end, bump_forward=false))
+        write(io, header, Bag.records)
     end
     # @test   readstring(Bag.file) ==  readstring(outputfile) # differnces in float representation, but otherwise hold the same information.
     #TODO: explicitly test that Bag.files hold the same information.
@@ -153,22 +153,22 @@ end #testset I/O
 @test Bedgraph.isComment(Bag.comment1)
 @test Bedgraph.isBrowser(Bag.browser3)
 
-@test Bedgraph.isLikeTrack("1 2 3 4") == false
-@test Bedgraph.isLikeTrack(Bag.parameter_line) == false
-@test Bedgraph.isLikeTrack(Bag.parameter_line_4) == false
-@test Bedgraph.isLikeTrack(Bag.parameter_line_min) == false
-@test Bedgraph.isLikeTrack(Bag.parameter_line_long) == false
-@test Bedgraph.isLikeTrack(Bag.line1) == true
-@test Bedgraph.isLikeTrack(Bag.line1_2) == true
-@test Bedgraph.isLikeTrack(Bag.line1_3) == true
-@test Bedgraph.isLikeTrack(Bag.line1_4) == true
-@test Bedgraph.isLikeTrack(Bag.line1_5) == true
-@test Bedgraph.isLikeTrack(Bag.line1_6) == true
-@test Bedgraph.isLikeTrack(Bag.line1_7) == true
+@test Bedgraph.isLikeRecord("1 2 3 4") == false
+@test Bedgraph.isLikeRecord(Bag.parameter_line) == false
+@test Bedgraph.isLikeRecord(Bag.parameter_line_4) == false
+@test Bedgraph.isLikeRecord(Bag.parameter_line_min) == false
+@test Bedgraph.isLikeRecord(Bag.parameter_line_long) == false
+@test Bedgraph.isLikeRecord(Bag.line1) == true
+@test Bedgraph.isLikeRecord(Bag.line1_2) == true
+@test Bedgraph.isLikeRecord(Bag.line1_3) == true
+@test Bedgraph.isLikeRecord(Bag.line1_4) == true
+@test Bedgraph.isLikeRecord(Bag.line1_5) == true
+@test Bedgraph.isLikeRecord(Bag.line1_6) == true
+@test Bedgraph.isLikeRecord(Bag.line1_7) == true
 
 
-@test Bedgraph.isLikeTrack(Bag.line_other_space) == true
-@test Bedgraph.isLikeTrack(Bag.line_other) == true
+@test Bedgraph.isLikeRecord(Bag.line_other_space) == true
+@test Bedgraph.isLikeRecord(Bag.line_other) == true
 
 end #testset Matching
 
@@ -197,35 +197,35 @@ c1, c2, c3, c4 = Bedgraph._convertCells(Bedgraph._splitLine(Bag.line1))
 @test typeof(c3) <: Int
 @test typeof(c4) <: Real
 
-@test Track(Bag.line1) == Bag.track1
-@test convert(Track, Bag.line1) == Bag.track1
+@test Record(Bag.line1) == Bag.record1
+@test convert(Record, Bag.line1) == Bag.record1
 
-@test Track(Bag.cells1) == Bag.track1
-@test convert(Track, Bag.cells1) == Bag.track1
+@test Record(Bag.cells1) == Bag.record1
+@test convert(Record, Bag.cells1) == Bag.record1
 
-@test_throws MethodError convert(Track, String(Bag.line1, " ", "extra_cell")) #TODO: determine difference between MethodError and ErrorException.
-@test_throws ErrorException convert(Track, [Bag.cells1; "extra_cell"])
+@test_throws MethodError convert(Record, String(Bag.line1, " ", "extra_cell")) #TODO: determine difference between MethodError and ErrorException.
+@test_throws ErrorException convert(Record, [Bag.cells1; "extra_cell"])
 
-@test convert(Vector{Track}, Bag.chroms, Bag.chrom_starts, Bag.chrom_ends, Bag.data_values) == Bag.tracks
+@test convert(Vector{Record}, Bag.chroms, Bag.chrom_starts, Bag.chrom_ends, Bag.data_values) == Bag.records
 
 end #testset Conversion
 
 @testset "Internal Helpers" begin
 
-@test Bedgraph._range(Bag.track1) == Bag.track1.chrom_start : Bag.track1.chrom_end - 1
-@test Bedgraph._range(Bag.track1, right_open=false) == (Bag.track1.chrom_start + 1 ) : Bag.track1.chrom_end
+@test Bedgraph._range(Bag.record1) == Bag.record1.chrom_start : Bag.record1.chrom_end - 1
+@test Bedgraph._range(Bag.record1, right_open=false) == (Bag.record1.chrom_start + 1 ) : Bag.record1.chrom_end
 
-@test Bedgraph._range(Bag.tracks) == Bag.track1.chrom_start : Track(Bag.line9).chrom_end - 1
-@test Bedgraph._range(Bag.tracks, right_open=false) == Bag.track1.chrom_start + 1 : Track(Bag.line9).chrom_end
+@test Bedgraph._range(Bag.records) == Bag.record1.chrom_start : Record(Bag.line9).chrom_end - 1
+@test Bedgraph._range(Bag.records, right_open=false) == Bag.record1.chrom_start + 1 : Record(Bag.line9).chrom_end
 
 
-bumped_tracks = Bedgraph._bumpForward(Bag.tracks)
-@test bumped_tracks[1].chrom_start == (Bag.tracks[1].chrom_start + 1)
-@test bumped_tracks[1].chrom_end == (Bag.tracks[1].chrom_end + 1)
+bumped_records = Bedgraph._bumpForward(Bag.records)
+@test bumped_records[1].chrom_start == (Bag.records[1].chrom_start + 1)
+@test bumped_records[1].chrom_end == (Bag.records[1].chrom_end + 1)
 
-bumped_tracks = Bedgraph._bumpBack(Bag.tracks)
-@test bumped_tracks[1].chrom_start == (Bag.tracks[1].chrom_start - 1)
-@test bumped_tracks[1].chrom_end == (Bag.tracks[1].chrom_end - 1)
+bumped_records = Bedgraph._bumpBack(Bag.records)
+@test bumped_records[1].chrom_start == (Bag.records[1].chrom_start - 1)
+@test bumped_records[1].chrom_end == (Bag.records[1].chrom_end - 1)
 
 
 end #testset Internal Helpers
@@ -240,19 +240,19 @@ end #testset Internal Helpers
 @test Bag.data_values == compressed_data_value
 
 # Expansion and compression test.
-n, expanded_data_value = Bedgraph.expand(Bag.tracks, right_open=true)
-compressed_tracks = Bedgraph.compress("chr19", n, expanded_data_value, right_open=true)
-@test compressed_tracks == Bag.tracks
+n, expanded_data_value = Bedgraph.expand(Bag.records, right_open=true)
+compressed_records = Bedgraph.compress("chr19", n, expanded_data_value, right_open=true)
+@test compressed_records == Bag.records
 
-# Expansion and compression of Tracks.
-n, expanded_data_value = Bedgraph.expand(Bag.tracks, right_open=false)
-compressed_tracks = Bedgraph.compress("chr19", n, expanded_data_value, right_open=false)
-@test compressed_tracks == Bag.tracks
+# Expansion and compression of Records.
+n, expanded_data_value = Bedgraph.expand(Bag.records, right_open=false)
+compressed_records = Bedgraph.compress("chr19", n, expanded_data_value, right_open=false)
+@test compressed_records == Bag.records
 
 # Expansion and compression of Arrays via convert.
 n, expanded_data_value = Bedgraph.expand("chr19", Bag.chrom_starts, Bag.chrom_ends, Bag.data_values)
-compressed_tracks = Bedgraph.compress("chr19", n, expanded_data_value)
-@test compressed_tracks == Bag.tracks
+compressed_records = Bedgraph.compress("chr19", n, expanded_data_value)
+@test compressed_records == Bag.records
 
 end #testset Utilities
 

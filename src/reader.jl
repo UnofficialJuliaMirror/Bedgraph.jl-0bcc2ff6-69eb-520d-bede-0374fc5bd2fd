@@ -1,6 +1,6 @@
-# Check if the track data is in the four column BED format.
-function isLikeTrack(line::String) :: Bool
-    return  occursin(r"^\s*\S*(?=[A-Za-z])\S*\s+(\d+)\s+(\d+)\s+(\S*\d)\s*$", line) # Note: is like a Track.
+# Check if the record data is in the four column BED format.
+function isLikeRecord(line::String) :: Bool
+    return  occursin(r"^\s*\S*(?=[A-Za-z])\S*\s+(\d+)\s+(\d+)\s+(\S*\d)\s*$", line) # Note: is like a record.
 end
 
 function isBrowser(line::String) :: Bool
@@ -12,13 +12,13 @@ function isComment(line::String) :: Bool
 end
 
 
-function seekNextTrack(io) :: Nothing
+function seekNextRecord(io) :: Nothing
     seekstart(io)
 
     pos = position(io)
     line = ""
 
-    while !eof(io) && !isLikeTrack(line)
+    while !eof(io) && !isLikeRecord(line)
         pos = position(io)
         line = readline(io)
     end
@@ -35,7 +35,7 @@ function readParameters(io) :: String
 
     pos = position(io)
 
-    while !eof(io) && !isLikeTrack(line) # Note: regex is used to limit the search by exiting the loop when a line matches the bedGraph track format.
+    while !eof(io) && !isLikeRecord(line) # Note: regex is used to limit the search by exiting the loop when a line matches the bedGraph record format.
         line = readline(io)
 
         if contains(line, "type=bedGraph") # Note: the track type is REQUIRED, and must be bedGraph.
@@ -47,16 +47,16 @@ end
 
 
 
-function readTracks(io) :: Vector{Track}
-    seekNextTrack(io)
+function readRecords(io) :: Vector{Record}
+    seekNextRecord(io)
 
-    tracks = Track[]
+    records = Vector{Record}()
 
     while !eof(io)
-        push!(tracks, Track(readline(io)))
+        push!(records, Record(readline(io)))
     end
 
-    return tracks
+    return records
 
 end
 
@@ -65,7 +65,7 @@ function read(file::AbstractString, sink=DataFrame)
     # Data.close!(sink)
 
     data = open(file, "r") do io
-        seekNextTrack(io)
+        seekNextRecord(io)
 
         df = DataFrame(
             chrom = Vector{String}(),
@@ -87,7 +87,7 @@ function read(file::AbstractString, sink=DataFrame)
         df
 	end
 
-    # tracks = rea
+    # records = rea
 
 
     # sink = DataFrame(chrom=data[:,1], chrom_start=data[:,2], chrom_end=data[:,3], data_value=data[:,4])

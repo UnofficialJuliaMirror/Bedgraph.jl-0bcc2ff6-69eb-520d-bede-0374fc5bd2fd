@@ -1,51 +1,51 @@
-function _bump(tracks::Vector{Track}, b::Int) :: Vector{Track}
+function _bump(records::Vector{Record}, b::Int) :: Vector{Record}
 
-    new_tracks = Vector{Track}()
+    new_records = Vector{Record}()
 
-    for track in tracks
-        new_track  = Track(track.chrom, track.chrom_start + b, track.chrom_end + b, track.data_value)
-        push!(new_tracks, new_track)
+    for record in records
+        new_record  = Record(record.chrom, record.chrom_start + b, record.chrom_end + b, record.data_value)
+        push!(new_records, new_record)
     end
 
-    return new_tracks
+    return new_records
 end
-_bumpForward(tracks::Vector{Track}) = _bump(tracks, 1)
-_bumpBack(tracks::Vector{Track}) = _bump(tracks, -1)
+_bumpForward(records::Vector{Record}) = _bump(records, 1)
+_bumpBack(records::Vector{Record}) = _bump(records, -1)
 
-function _range(track::Track; right_open=true) :: UnitRange{Int}
+function _range(record::Record; right_open=true) :: UnitRange{Int}
 
-    pos_start = right_open ? track.chrom_start : track.chrom_start + 1
-    pos_end = right_open ? track.chrom_end - 1 : track.chrom_end
+    pos_start = right_open ? record.chrom_start : record.chrom_start + 1
+    pos_end = right_open ? record.chrom_end - 1 : record.chrom_end
 
     return pos_start : pos_end
 end
 
-function _range(tracks::Vector{Track}; right_open=true) :: UnitRange{Int}
+function _range(records::Vector{Record}; right_open=true) :: UnitRange{Int}
 
-    pos_start = _range(tracks[1], right_open=right_open)[1]
-    pos_end = _range(tracks[end], right_open=right_open)[end]
+    pos_start = _range(records[1], right_open=right_open)[1]
+    pos_end = _range(records[end], right_open=right_open)[end]
 
     return  pos_start : pos_end
 end
 
 
 
-function Base.convert(::Type{Vector{Track}}, chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}) where {T<:Real}
+function Base.convert(::Type{Vector{Record}}, chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}) where {T<:Real}
 
     # Check that arrays are of equal length.
     length(chroms) == length(chrom_starts) && length(chrom_ends) == length(data_values) && length(chroms) == length(data_values) || error("Vectors are of unequal lengths: chroms=$(length(chroms)), chrom_starts=$(length(chrom_starts)), chrom_ends=$(length(chrom_ends)), data_values=$(length(data_values))")
 
-    tracks = Vector{Track}()
+    records = Vector{Record}()
 
     for (chrom, chrom_start, chrom_end, data_value) in zip(chroms, chrom_starts, chrom_ends, data_values)
-        push!(tracks,  Track(chrom, chrom_start, chrom_end, data_value))
+        push!(records,  Record(chrom, chrom_start, chrom_end, data_value))
     end
 
-    return tracks
+    return records
 end
 
 
-function compress(chroms::Vector{String}, n::Vector{Int}, values::Vector{<:Real}; right_open = true, bump_back=true) :: Vector{Track}
+function compress(chroms::Vector{String}, n::Vector{Int}, values::Vector{<:Real}; right_open = true, bump_back=true) :: Vector{Record}
 
     ranges = Vector{UnitRange{Int}}()
     compressed_values = Vector{Float64}()
@@ -79,14 +79,14 @@ function compress(chroms::Vector{String}, n::Vector{Int}, values::Vector{<:Real}
         end
     end
 
-    new_tracks = Vector{Track}()
+    new_records = Vector{Record}()
 
     for (index, range) in enumerate(ranges)
-        new_track  = Track(compressed_chroms[index], first(range), last(range), compressed_values[index])
-        push!(new_tracks, new_track)
+        new_record  = Record(compressed_chroms[index], first(range), last(range), compressed_values[index])
+        push!(new_records, new_record)
     end
 
-    return bump_back ? _bumpBack(new_tracks) : new_tracks
+    return bump_back ? _bumpBack(new_records) : new_records
 
 end
 compress(chrom::String, n::Vector{Int}, values::Vector{T}; right_open = true, bump_back=true) where {T<:Real} = compress(fill(chrom, length(n)), n, values, right_open = right_open, bump_back = bump_back)
@@ -99,7 +99,7 @@ function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real} #TODO: deprecate
     chrom_ends::Vector{Int} = []
     data_values::Vector{Real} = []
 
-    # Start inital track.
+    # Start inital record.
     # push!(chrom, c[1])
     push!(chrom_starts, n[1])
 
@@ -109,18 +109,18 @@ function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real} #TODO: deprecate
     while next !== nothing
         (value, state) = next
 
-        # Finish current track and start new track if value has changed.
+        # Finish current record and start new record if value has changed.
         if value != previous_value
-            # Push track end.
+            # Push record end.
             push!(chrom_ends, n[state-1])
 
-            # Push track value.
+            # Push record value.
             push!(data_values, previous_value)
 
-            # Start new track
+            # Start new record
             # push!(chrom, c[1])
 
-            # Push track start.
+            # Push record start.
             push!(chrom_starts, n[state-1])
 
             previous_value = value
@@ -129,10 +129,10 @@ function compress(n::Vector{Int}, v::Vector{T}) where {T<:Real} #TODO: deprecate
         next = iterate(v, state)
 
         if next == nothing
-            # Push final track end.
+            # Push final record end.
             push!(chrom_ends, n[state-1])
 
-            # Push final track value.
+            # Push final record value.
             push!(data_values, value)
         end
     end
@@ -145,22 +145,22 @@ compress(n, v) =  compress(collect(n), v)
 
 
 
-function expand(tracks::Vector{Track}; right_open=true, bump_forward=true)
+function expand(records::Vector{Record}; right_open=true, bump_forward=true)
 
-    #TODO: ensure tracks are sorted with no overlap.
+    #TODO: ensure records are sorted with no overlap.
 
     if bump_forward
-        tracks =  _bumpForward(tracks)
+        records =  _bumpForward(records)
     end
 
-    total_range =_range(tracks, right_open = right_open)
+    total_range =_range(records, right_open = right_open)
 
     values = Vector{Float64}(undef, length(total_range))
     chroms = Vector{String}(undef, length(total_range))
 
-    for track in tracks
-        values[indexin(_range(track, right_open = right_open), total_range)] .= track.data_value
-        chroms[indexin(_range(track, right_open = right_open), total_range)] .= track.chrom
+    for record in records
+        values[indexin(_range(record, right_open = right_open), total_range)] .= record.data_value
+        chroms[indexin(_range(record, right_open = right_open), total_range)] .= record.chrom
     end
 
     return collect(total_range), values, chroms
@@ -197,4 +197,4 @@ function expand(chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values:
 end
 
 expand(chrom::String, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( fill(chrom, length(chrom_starts)), chrom_starts, chrom_ends, data_values, right_open=right_open, bump_forward=bump_forward)
-expand(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( convert(Vector{Track}, chroms, chrom_starts, chrom_ends, data_values), right_open=right_open, bump_forward=bump_forward)
+expand(chroms::Vector{String}, chrom_starts::Vector{Int}, chrom_ends::Vector{Int}, data_values::Vector{T}; right_open=true, bump_forward=true) where {T<:Real} = expand( convert(Vector{Record}, chroms, chrom_starts, chrom_ends, data_values), right_open=right_open, bump_forward=bump_forward)

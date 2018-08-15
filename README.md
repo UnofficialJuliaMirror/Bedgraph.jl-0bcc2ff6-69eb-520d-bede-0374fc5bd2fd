@@ -41,14 +41,14 @@ open(file, "r") do io
 end
 ```
 
-#### Read tracks
+#### Read records
 
 ```julia
 using Bedgraph
 
-tracks = Vector{Track}()
+records = Vector{Record}()
 open(file, "r") do io
-    tracks = Bedgraph.readTracks(io)
+    records = Bedgraph.readRecords(io)
 end
 ```
 
@@ -70,10 +70,10 @@ Bedgraph.write(chroms, chrom_starts, chrom_ends, data_values, outfile="data.bedg
 ```julia
 using Bedgraph
 
-tracks = [Track("chr19", 49302000, 49302300, -1.0), Track("chr19", 49302300, 49302600, -1.75)]
+records = [Record("chr19", 49302000, 49302300, -1.0), Record("chr19", 49302300, 49302600, -1.75)]
 
 open(output_file, "w") do io
-    write(io, Bedgraph.BedgraphData(Bedgraph.generateBasicHeader("chr19", tracks[1].chrom_start, tracks[end].chrom_end, bump_forward=false), tracks))
+    write(io, Bedgraph.BedgraphData(Bedgraph.generateBasicHeader("chr19", records[1].chrom_start, records[end].chrom_end, bump_forward=false), records))
 end
 
 ```
@@ -94,12 +94,12 @@ expanded_data_values = [-1.0,-1.0,-1.0, ..., 1.00, 1.00, 1.00]
 ```julia
 using Bedgraph
 
-const tracks = [Track("chr19", 49302000, 49302300, -1.0), Track("chr19", 49302300, 49302600, -1.75)]
+const records = [Record("chr19", 49302000, 49302300, -1.0), Record("chr19", 49302300, 49302600, -1.75)]
 
-compressed_tracks = Bedgraph.compress("chr19", n, expanded_data_value)
+compressed_records = Bedgraph.compress("chr19", n, expanded_data_value)
 ```
 
-#### Expand track data
+#### Expand record data
 Expand chromosome coordinates from the zero-based, half-open format.
 
 ```julia
@@ -116,7 +116,7 @@ const data_values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
 using Bedgraph
 
-const tracks = [Track("chr19", 49302000, 49302300, -1.0), Track("chr19", 49302300, 49302600, -1.75)]
+const records = [Record("chr19", 49302000, 49302300, -1.0), Record("chr19", 49302300, 49302600, -1.75)]
 
-n, expanded_data_values = Bedgraph.expand(tracks)
+n, expanded_data_values = Bedgraph.expand(records)
 ```
