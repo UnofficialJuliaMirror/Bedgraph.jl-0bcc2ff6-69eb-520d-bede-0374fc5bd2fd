@@ -92,57 +92,32 @@ open(Bag.file_headerless, "r") do io # Note: reading records first to check seek
     @test read(io, Bedgraph.BedgraphHeader{Vector{String}}).data == []
 end
 
-# Read test.
-df = Bedgraph.read(Bag.file)
-
-@test size(df) == (9,4)
-
-@test df[:chrom] == Bag.chroms
-@test df[:first] == Bag.firsts
-@test df[:last] == Bag.lasts
-@test df[:value] == Bag.values
-
-# Write test.
-outputfile1 = tempname() * ".bedgraph"
-@info "outputfile:" outputfile1
-
-try
-    Bedgraph.write(Bag.chroms, Bag.firsts, Bag.lasts, Bag.values, outfile=outputfile1)
-
-    reloaded_df = Bedgraph.read(outputfile1)
-
-    @test df == reloaded_df
-finally
-    rm(outputfile1)
-end
-
-
-outputfile2 = tempname() * ".bedgraph"
-@info "outputfile:" outputfile2
+outputfile = tempname() * ".bedgraph"
+@info "outputfile:" outputfile
 header = Bedgraph.BedgraphHeader(Bedgraph.generateBasicHeader(Bag.records))
 
 try
-    open(outputfile2, "w") do io
+    open(outputfile, "w") do io
         write(io, header, Bag.records)
     end
     # @test   readstring(Bag.file) ==  readstring(outputfile) # differnces in float representation, but otherwise hold the same information.
     #TODO: explicitly test that Bag.files hold the same information.
 finally
-    rm(outputfile2)
+    rm(outputfile)
 end
 
-outputfile3 = tempname() * ".bedgraph"
-@info "outputfile:" outputfile3
+outputfile = tempname() * ".bedgraph"
+@info "outputfile:" outputfile
 
 try
-    open(outputfile3, "w") do io
+    open(outputfile, "w") do io
         header = Bedgraph.BedgraphHeader(Bedgraph.generateBasicHeader("chr19", Bag.records[1].first, Bag.records[end].last, bump_forward=false))
         write(io, header, Bag.records)
     end
     # @test   readstring(Bag.file) ==  readstring(outputfile) # differnces in float representation, but otherwise hold the same information.
     #TODO: explicitly test that Bag.files hold the same information.
 finally
-    rm(outputfile3)
+    rm(outputfile)
 end
 
 end #testset I/O

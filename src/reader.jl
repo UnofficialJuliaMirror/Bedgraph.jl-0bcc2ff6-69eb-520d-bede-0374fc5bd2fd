@@ -57,38 +57,3 @@ function readRecords(io::IO) :: Vector{Record}
     return records
 
 end
-
-function read(file::AbstractString, sink=DataFrame)
-    # sink = Data.stream!(Source(file), sink)
-    # Data.close!(sink)
-
-    data = open(file, "r") do io
-        seekNextRecord(io)
-
-        df = DataFrame(
-            chrom = Vector{String}(),
-            first = Vector{Int64}(),
-            last = Vector{Int64}(),
-            value = Vector())
-
-        while !eof(io)
-            line = readline(io)
-            chrom, first, last, value = _convertCells(_splitLine(line))
-
-            append!(df, DataFrame(
-                chrom = chrom,
-                first = first,
-                last = last,
-                value = value))
-        end
-
-        df
-	end
-
-    # records = rea
-
-
-    # sink = DataFrame(chrom=data[:,1], first=data[:,2], last=data[:,3], value=data[:,4])
-
-    return data
-end
