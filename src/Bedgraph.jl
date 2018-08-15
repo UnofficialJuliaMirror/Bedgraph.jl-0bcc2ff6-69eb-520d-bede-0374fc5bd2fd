@@ -2,8 +2,6 @@ __precompile__()
 
 module Bedgraph
 using DataFrames
-using TextParse
-# using GenomicFeatures
 
 include("record.jl")
 include("helpers.jl")
