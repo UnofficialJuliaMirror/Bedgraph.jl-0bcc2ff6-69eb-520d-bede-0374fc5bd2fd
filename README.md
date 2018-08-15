@@ -60,10 +60,10 @@ using Bedgraph
 
 const chroms = ["chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19", "chr19"]
 const firsts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
-const chrom_ends = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
+const lasts = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
 const values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
-Bedgraph.write(chroms, firsts, chrom_ends, values, outfile="data.bedgraph")
+Bedgraph.write(chroms, firsts, lasts, values, outfile="data.bedgraph")
 ```
 
 
@@ -73,7 +73,7 @@ using Bedgraph
 records = [Record("chr19", 49302000, 49302300, -1.0), Record("chr19", 49302300, 49302600, -1.75)]
 
 open(output_file, "w") do io
-    write(io, Bedgraph.BedgraphData(Bedgraph.generateBasicHeader("chr19", records[1].first, records[end].chrom_end, bump_forward=false), records))
+    write(io, Bedgraph.BedgraphData(Bedgraph.generateBasicHeader("chr19", records[1].first, records[end].last, bump_forward=false), records))
 end
 
 ```
@@ -88,7 +88,7 @@ using Bedgraph
 n = 49302000:49304700
 expanded_values = [-1.0,-1.0,-1.0, ..., 1.00, 1.00, 1.00]
 
-(compressed_firsts,compressed_chrom_ends,compressed_values) = Bedgraph.compress(n,expanded_values)
+(compressed_firsts,compressed_lasts,compressed_values) = Bedgraph.compress(n,expanded_values)
 ```
 
 ```julia
@@ -106,10 +106,10 @@ Expand chromosome coordinates from the zero-based, half-open format.
 using Bedgraph
 
 const firsts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400]
-const chrom_ends = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
+const lasts = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
 const values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
-(n, expanded_values) = Bedgraph.expand(firsts, chrom_ends, values)
+(n, expanded_values) = Bedgraph.expand(firsts, lasts, values)
 ```
 
 ```julia

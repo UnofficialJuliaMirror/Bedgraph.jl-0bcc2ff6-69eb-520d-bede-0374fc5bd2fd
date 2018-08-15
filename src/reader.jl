@@ -70,17 +70,17 @@ function read(file::AbstractString, sink=DataFrame)
         df = DataFrame(
             chrom = Vector{String}(),
             first = Vector{Int64}(),
-            chrom_end = Vector{Int64}(),
+            last = Vector{Int64}(),
             value = Vector())
 
         while !eof(io)
             line = readline(io)
-            chrom, first, chrom_end, value = _convertCells(_splitLine(line))
+            chrom, first, last, value = _convertCells(_splitLine(line))
 
             append!(df, DataFrame(
                 chrom = chrom,
                 first = first,
-                chrom_end = chrom_end,
+                last = last,
                 value = value))
         end
 
@@ -90,7 +90,7 @@ function read(file::AbstractString, sink=DataFrame)
     # records = rea
 
 
-    # sink = DataFrame(chrom=data[:,1], first=data[:,2], chrom_end=data[:,3], value=data[:,4])
+    # sink = DataFrame(chrom=data[:,1], first=data[:,2], last=data[:,3], value=data[:,4])
 
     return data
 end

@@ -21,7 +21,7 @@ function generateBasicHeader(records::Vector{Record}; bump_forward=true) :: Vect
     chrom = records[1].chrom
 
     pos_start = records[1].first
-    pos_end = records[end].chrom_end
+    pos_end = records[end].last
 
     if bump_forward
         pos_start = pos_start + 1
