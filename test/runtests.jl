@@ -1,6 +1,11 @@
 using Bedgraph
 using DataFrames
-using Test
+@static if VERSION < v"0.7.0-DEV.2005"
+    using Base.Test
+else
+    using Test
+end
+
 
 module Bag
 using Bedgraph
@@ -93,7 +98,6 @@ open(Bag.file_headerless, "r") do io # Note: reading records first to check seek
 end
 
 outputfile = tempname() * ".bedgraph"
-@info "outputfile:" outputfile
 header = Bedgraph.BedgraphHeader(Bedgraph.generateBasicHeader(Bag.records))
 
 try
@@ -107,7 +111,6 @@ finally
 end
 
 outputfile = tempname() * ".bedgraph"
-@info "outputfile:" outputfile
 
 try
     open(outputfile, "w") do io
