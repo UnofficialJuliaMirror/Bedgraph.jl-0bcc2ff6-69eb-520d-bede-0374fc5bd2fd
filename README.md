@@ -22,15 +22,6 @@ Use Pkg.add("Bedgraph") in Julia to install Bedgraph.jl and its dependencies.
 ### Reading and writing bedGraph files
 > See source for optional `bump_back`, `bump_forward`, and `right_open` key values. These options are included in the pertinent read/write functions to handle quirks of the zero-based and half-open nature of the bedGraph format.
 
-#### Read a bedGraph file into a DataFrame
-Bedgraph.jl currently returns read data as a DataFrame.
-
-```julia
-using Bedgraph, DataFrames
-
-df = Bedgraph.read("data.bedgraph")
-```
-
 #### Read header/meta
 ```julia
 using Bedgraph

@@ -1,7 +1,6 @@
 __precompile__()
 
 module Bedgraph
-using DataFrames
 
 include("record.jl")
 include("helpers.jl")
