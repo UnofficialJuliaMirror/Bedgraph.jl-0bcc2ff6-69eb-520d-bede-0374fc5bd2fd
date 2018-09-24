@@ -2,7 +2,7 @@ mutable struct BedgraphHeader{T} #TODO: determine what and how this will be.
     data::T
 end
 
-function Base.convert(::Type{String}, header::BedgraphHeader{T}) :: String where T<:Vector{String}
+function Base.convert(::Type{String}, header::BedgraphHeader{Vector{String}}) :: String
 
     str = ""
     for line in header.data
@@ -12,11 +12,7 @@ function Base.convert(::Type{String}, header::BedgraphHeader{T}) :: String where
     return str
 end
 
-function Base.convert(::Type{BedgraphHeader{Vector{String}}}, header::Vector{String})
-    return BedgraphHeader(header)
-end
-
-function generateBasicHeader(records::Vector{Record}; bump_forward=true) :: Vector{String}
+function generateBasicHeader(records::Vector{Record}; bump_forward=true) :: BedgraphHeader{Vector{String}}
 
     chrom = records[1].chrom
 
@@ -28,7 +24,7 @@ function generateBasicHeader(records::Vector{Record}; bump_forward=true) :: Vect
         pos_end = pos_end + 1
     end
 
-    return ["browser position $chrom:$pos_start-$pos_end", "track type=bedGraph"]
+    return BedgraphHeader(["browser position $chrom:$pos_start-$pos_end", "track type=bedGraph"])
 end
 
 generateBasicHeader(chrom::String, pos_start::Int, pos_end::Int; bump_forward=true) = generateBasicHeader([Record(chrom, pos_start, pos_end,0)], bump_forward=bump_forward)

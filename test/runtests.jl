@@ -111,7 +111,7 @@ end
 end
 
 outputfile = tempname() * ".bedgraph"
-header = Bedgraph.BedgraphHeader(Bedgraph.generateBasicHeader(Bag.records))
+header = Bedgraph.generateBasicHeader(Bag.records)
 
 try
     open(outputfile, "w") do io
@@ -126,8 +126,16 @@ end
 outputfile = tempname() * ".bedgraph"
 
 try
+	write(outputfile, header, Bag.records)
+finally
+    rm(outputfile)
+end
+
+outputfile = tempname() * ".bedgraph"
+
+try
     open(outputfile, "w") do io
-        header = Bedgraph.BedgraphHeader(Bedgraph.generateBasicHeader("chr19", Bag.records[1].first, Bag.records[end].last, bump_forward=false))
+        header = Bedgraph.generateBasicHeader("chr19", Bag.records[1].first, Bag.records[end].last, bump_forward=false)
         write(io, header, Bag.records)
     end
     # @test   readstring(Bag.file) ==  readstring(outputfile) # differnces in float representation, but otherwise hold the same information.

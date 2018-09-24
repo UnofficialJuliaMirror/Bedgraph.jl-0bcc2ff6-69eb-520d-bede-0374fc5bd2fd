@@ -67,7 +67,10 @@ const firsts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 4930
 const lasts = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
 const values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
-Bedgraph.write(chroms, firsts, lasts, values, outfile="data.bedgraph")
+records = convert(Vector{Bedgraph.Record}, chroms, firsts, lasts, values)
+header = Bedgraph.generateBasicHeader(records)
+
+write("data.bedgraph", header, records)
 ```
 
 
@@ -75,9 +78,10 @@ Bedgraph.write(chroms, firsts, lasts, values, outfile="data.bedgraph")
 using Bedgraph
 
 records = [Record("chr19", 49302000, 49302300, -1.0), Record("chr19", 49302300, 49302600, -1.75)]
+header = Bedgraph.BedgraphData(Bedgraph.generateBasicHeader("chr19", records[1].first, records[end].last, bump_forward=false)
 
 open(output_file, "w") do io
-    write(io, Bedgraph.BedgraphData(Bedgraph.generateBasicHeader("chr19", records[1].first, records[end].last, bump_forward=false), records))
+    write(io, header, records))
 end
 
 ```
