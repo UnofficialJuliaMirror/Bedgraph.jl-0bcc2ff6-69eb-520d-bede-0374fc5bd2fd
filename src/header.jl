@@ -27,7 +27,7 @@ function generateBasicHeader(records::Vector{Record}; bump_forward=true) :: Bedg
     return BedgraphHeader(["browser position $chrom:$pos_start-$pos_end", "track type=bedGraph"])
 end
 
-generateBasicHeader(chrom::String, pos_start::Int, pos_end::Int; bump_forward=true) = generateBasicHeader([Record(chrom, pos_start, pos_end,0)], bump_forward=bump_forward)
+generateBasicHeader(chrom::String, pos_start::Int, pos_end::Int; bump_forward=true) = generateBasicHeader([Record(chrom, pos_start, pos_end, 0)], bump_forward=bump_forward)
 
 function _readHeader(io) :: Vector{String}
     position(io) == 0 || seekstart(io)

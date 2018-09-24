@@ -51,9 +51,9 @@ const cells1 = ["chr19", "49302000", "49302300", "-1.0"]
 const record1 = Record("chr19", 49302000, 49302300, -1.0)
 
 const parameter_line_min = "track type=bedGraph"
-const parameter_line = "track type=bedGraph name=\"BedGraph Format\" description=\"BedGraph format\" visibility=full color=200,100,0 altColor=0,100,200 priority=20"
+const parameter_line = "track type=bedGraph name=\"BedGraph Format\" description=\"BedGraph format\" visibility=full color=200, 100, 0 altColor=0, 100, 200 priority=20"
 const parameter_line_4 = "track type=bedGraph name=track_label description=center_label"
-const parameter_line_long = "track type=bedGraph name=track_label description=center_label visibility=display_mode color=r,g,b altColor=r,g,b priority=priority autoScale=on|off alwaysZero=on|off gridDefault=on|off maxHeightPixels=max:default:min graphType=bar|points viewLimits=lower:upper yLineMark=real-value yLineOnOff=on|off windowingFunction=maximum|mean|minimum smoothingWindow=off|2-16"
+const parameter_line_long = "track type=bedGraph name=track_label description=center_label visibility=display_mode color=r, g, b altColor=r, g, b priority=priority autoScale=on|off alwaysZero=on|off gridDefault=on|off maxHeightPixels=max:default:min graphType=bar|points viewLimits=lower:upper yLineMark=real-value yLineOnOff=on|off windowingFunction=maximum|mean|minimum smoothingWindow=off|2-16"
 
 const file = joinpath(@__DIR__, "data.bedgraph")
 const file_headerless = joinpath(@__DIR__, "data-headerless.bedgraph")
@@ -73,7 +73,7 @@ end # module bag
 # Seek test.
 open(Bag.file, "r") do io
     Bedgraph.seekNextRecord(io)
-    @test position(io) == 532
+    @test position(io) == 536
     @test readline(io) == Bag.line1
 end
 
