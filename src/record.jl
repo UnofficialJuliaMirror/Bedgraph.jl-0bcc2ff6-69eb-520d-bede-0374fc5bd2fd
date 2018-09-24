@@ -19,8 +19,8 @@ function Record(data::Vector{String})
 end
 
 function Base.convert(::Type{Record}, data::Vector{String})
-    c1, c2, c3, c4 = _convertCells(data)
-    return Record(c1, c2, c3, c4)
+    chrom, first, last, value = _convertCells(data)
+    return Record(chrom, first, last, value)
 end
 
 function Record(data::String)
