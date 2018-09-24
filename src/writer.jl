@@ -2,15 +2,15 @@ function Base.write(io::IO, records::Vector{Record}) #Note: we assume the indexe
     for record in records
         Base.write(io, record, '\n')
     end
+    return position(io)
 end
 
 function Base.write(io::IO, record::Record)
     # delim = '\t'
     delim = ' '
-    return Base.write(io, string(record.chrom, delim, record.first, delim, record.last, delim, record.value))
-end
+    strings = convert(Vector{String}, record)
 
-function Base.write(io::IO, header::BedgraphHeader{Vector{String}}, records::Vector{Record})
-    Base.write(io, header)
-    Base.write(io, records)
+    Base.join(io, strings, delim)
+
+    return position(io)
 end
