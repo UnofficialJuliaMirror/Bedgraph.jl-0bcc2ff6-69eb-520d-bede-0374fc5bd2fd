@@ -224,11 +224,12 @@ end #testset Internal Helpers
 @testset "Utilities" begin
 
 # Original expansion and compression test.
-(n, expanded_value) = Bedgraph.expand(Bag.firsts, Bag.lasts, Bag.values)
-(compressed_first,compressed_last,compressed_value) = Bedgraph.compress(n,expanded_value)
-@test Bag.firsts == compressed_first
-@test Bag.lasts == compressed_last
-@test Bag.values == compressed_value
+(n, expanded_value, expanded_chrom) = Bedgraph.expand(Bag.chroms, Bag.firsts, Bag.lasts, Bag.values)
+records = Bedgraph.compress(expanded_chrom, n, expanded_value)
+@test Bag.chroms == Bedgraph.chrom.(records)
+@test Bag.firsts == first.(records)
+@test Bag.lasts == last.(records)
+@test Bag.values == Bedgraph.value.(records)
 
 # Expansion and compression test.
 n, expanded_value = Bedgraph.expand(Bag.records, right_open=true)

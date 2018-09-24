@@ -45,7 +45,6 @@ function _readHeader(io) :: Vector{String}
     end
 
     return header
-
 end
 
 function Base.read(io::IO, ::Type{BedgraphHeader{T}}) where T
