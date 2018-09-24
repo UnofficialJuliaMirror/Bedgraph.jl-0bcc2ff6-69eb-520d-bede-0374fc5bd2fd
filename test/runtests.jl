@@ -97,6 +97,20 @@ open(Bag.file_headerless, "r") do io # Note: reading records first to check seek
     @test read(io, Bedgraph.BedgraphHeader{Vector{String}}).data == []
 end
 
+@test  Bag.records == open(Bag.file, "r") do io
+	records = Vector{Record}()
+
+    while !eof(io)
+        record = Bedgraph.readRecord(io)
+        if record != nothing
+            push!(records, record)
+        end
+    end
+
+    return records
+
+end
+
 outputfile = tempname() * ".bedgraph"
 header = Bedgraph.BedgraphHeader(Bedgraph.generateBasicHeader(Bag.records))
 

@@ -45,13 +45,27 @@ function readParameters(io::IO) :: String
     end
 end
 
+function readRecord(io::IO) :: Union{Nothing, Record}
+
+    line = readline(io)
+
+    if isLikeRecord(line)
+        return Record(line)
+    end
+
+    return nothing
+end
+
 function readRecords(io::IO) :: Vector{Record}
     seekNextRecord(io)
 
     records = Vector{Record}()
 
     while !eof(io)
-        push!(records, Record(readline(io)))
+        record = readRecord(io)
+        if record != nothing
+            push!(records, record)
+        end
     end
 
     return records

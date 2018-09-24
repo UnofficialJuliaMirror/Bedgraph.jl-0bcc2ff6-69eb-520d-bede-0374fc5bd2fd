@@ -43,12 +43,25 @@ end
 
 #### Read records
 
+Read all records at once.
 ```julia
 using Bedgraph
 
 records = Vector{Record}()
 open(file, "r") do io
     records = Bedgraph.readRecords(io)
+end
+```
+
+Alternatively you may want to read records individually.
+```julia
+open(file, "r") do io
+    while !eof(io)
+        record = readRecord(io)
+        if record != nothing
+            # Process record.
+        end
+    end
 end
 ```
 
