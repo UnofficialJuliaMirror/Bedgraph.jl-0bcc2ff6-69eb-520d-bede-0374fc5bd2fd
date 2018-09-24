@@ -23,6 +23,10 @@ function Base.convert(::Type{Record}, data::Vector{String}) :: Record
     return Record(chrom, first, last, value)
 end
 
+function Base.convert(::Type{Vector{String}}, record::Record) :: Vector{String}
+    return String[record.chrom, string(record.first), string(record.last), string(record.value)]
+end
+
 function Record(data::String)
     return convert(Record, data)
 end
