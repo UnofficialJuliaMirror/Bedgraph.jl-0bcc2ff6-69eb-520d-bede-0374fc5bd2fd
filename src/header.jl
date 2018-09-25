@@ -43,7 +43,7 @@ function _readHeader(io) :: Vector{String}
     return header
 end
 
-function Base.read(io::IO, ::Type{BedgraphHeader{T}}) where T
+function Base.read(io::IO, ::Type{BedgraphHeader{Vector{String}}}) :: BedgraphHeader{Vector{String} }
     return BedgraphHeader(_readHeader(io))
 end
 

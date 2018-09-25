@@ -9,13 +9,18 @@
 
 > This project will try to follow the [semver](http://semver.org) pro forma.
 
-## Overview
+## Description
 This package provides read and write support for [Bedgraph files](https://genome.ucsc.edu/goldenPath/help/bedgraph.html), as well as other useful utilities.
 
 > **Note:**  this package does not currently handle bedGraph meta data such as the track definition or browser lines.
 
 ## Installation
-Use Pkg.add("Bedgraph") in Julia to install Bedgraph.jl and its dependencies.
+Install Bedgraph from the Julia REPL:
+```julia
+using Pkg
+add("Bedgraph")
+#Pkg.add("Bedgraph") for julia prior to v 0.7
+```
 
 ## Usage
 
@@ -26,15 +31,18 @@ Use Pkg.add("Bedgraph") in Julia to install Bedgraph.jl and its dependencies.
 ```julia
 using Bedgraph
 
-header = Vector{String}()
-open(file, "r") do io
-    header = Bedgraph.readHeader(io)
-end
+header = read(file, BedgraphHeader{Vector{String}})
 ```
 
 #### Read records
 
 Read all records at once.
+```julia
+using Bedgraph
+
+records = read(file, Vector{Bedgraph.Record})
+```
+
 ```julia
 using Bedgraph
 
@@ -44,7 +52,7 @@ open(file, "r") do io
 end
 ```
 
-Alternatively you may want to read records individually.
+Alternatively you may want to read and process records individually.
 ```julia
 open(file, "r") do io
     while !eof(io)
@@ -57,7 +65,7 @@ end
 ```
 
 #### Write a bedGraph file
-Bedgraph.jl currently provides two options. Either vectors or a BedgraphData type can be supplied to its write function.
+Bedgraph.jl currently provides two write functions: one for `Bedgraph.BedgraphHeader`, and one for `Bedgraph.Record`, which also accepts `Vector{Bedgraph.Record}`.
 
 ```julia
 using Bedgraph
@@ -78,7 +86,7 @@ write("data.bedgraph", header, records)
 using Bedgraph
 
 records = [Record("chr19", 49302000, 49302300, -1.0), Record("chr19", 49302300, 49302600, -1.75)]
-header = Bedgraph.BedgraphData(Bedgraph.generateBasicHeader("chr19", records[1].first, records[end].last, bump_forward=false)
+header = Bedgraph.generateBasicHeader("chr19", records[1].first, records[end].last, bump_forward=false)
 
 open(output_file, "w") do io
     write(io, header, records))
@@ -110,7 +118,7 @@ compressed_records = Bedgraph.compress("chr19", n, expanded_value)
 
 #### Expand record data
 Expand chromosome coordinates from the zero-based, half-open format.
-
+> **Note:**  please be aware of the order of returned items.
 ```julia
 using Bedgraph
 

@@ -84,6 +84,11 @@ open(Bag.file_headerless, "r") do io
     @test readline(io) == Bag.line1
 end
 
+
+@test read(Bag.file, Vector{Bedgraph.Record}) ==  Bag.records
+@test read(Bag.file, Bedgraph.BedgraphHeader{Vector{String}}).data == Bag.header
+
+
 open(Bag.file, "r") do io # Note: reading records first to check seek.
     @test Bedgraph.readRecords(io) ==  Bag.records
 	@test Bedgraph._readHeader(io) == Bag.header
@@ -231,10 +236,17 @@ end #testset Internal Helpers
 
 @testset "Utilities" begin
 
-# Original expansion and compression test.
+# Expansion and compression test.
 (n, expanded_value, expanded_chrom) = Bedgraph.expand(Bag.chroms, Bag.firsts, Bag.lasts, Bag.values)
 records = Bedgraph.compress(expanded_chrom, n, expanded_value)
 @test Bag.chroms == Bedgraph.chrom.(records)
+@test Bag.firsts == first.(records)
+@test Bag.lasts == last.(records)
+@test Bag.values == Bedgraph.value.(records)
+
+# Expansion and compression test (checking if the 3rd returned item can be ignored).
+(n, expanded_value) = Bedgraph.expand(Bag.chroms, Bag.firsts, Bag.lasts, Bag.values)
+records = Bedgraph.compress(expanded_chrom, n, expanded_value) #Note: reusing expanded_chrom from above.
 @test Bag.firsts == first.(records)
 @test Bag.lasts == last.(records)
 @test Bag.values == Bedgraph.value.(records)
