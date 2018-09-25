@@ -85,6 +85,7 @@ open(Bag.file_headerless, "r") do io
 end
 
 
+@test read(Bag.file, Vector{Bedgraph.Record}) ==  Bag.records
 @test read(Bag.file, Bedgraph.BedgraphHeader{Vector{String}}).data == Bag.header
 
 

@@ -40,6 +40,12 @@ Read all records at once.
 ```julia
 using Bedgraph
 
+records = read(file, Vector{Bedgraph.Record})
+```
+
+```julia
+using Bedgraph
+
 records = Vector{Record}()
 open(file, "r") do io
     records = Bedgraph.readRecords(io)

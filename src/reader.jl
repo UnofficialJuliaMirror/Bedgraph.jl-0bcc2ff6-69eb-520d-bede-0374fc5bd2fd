@@ -71,3 +71,7 @@ function readRecords(io::IO) :: Vector{Record}
     return records
 
 end
+
+function Base.read(io::IO, ::Type{Vector{Record}}) :: Vector{Record}
+    return readRecords(io)
+end
