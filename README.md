@@ -115,7 +115,7 @@ compressed_records = Bedgraph.compress("chr19", n, expanded_value)
 
 #### Expand record data
 Expand chromosome coordinates from the zero-based, half-open format.
-
+> **Note:**  please be aware of the order of returned items.
 ```julia
 using Bedgraph
 

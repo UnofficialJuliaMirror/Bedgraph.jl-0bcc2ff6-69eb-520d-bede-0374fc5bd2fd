@@ -239,6 +239,13 @@ records = Bedgraph.compress(expanded_chrom, n, expanded_value)
 @test Bag.lasts == last.(records)
 @test Bag.values == Bedgraph.value.(records)
 
+# Expansion and compression test (checking if the 3rd returned item can be ignored).
+(n, expanded_value) = Bedgraph.expand(Bag.chroms, Bag.firsts, Bag.lasts, Bag.values)
+records = Bedgraph.compress(expanded_chrom, n, expanded_value) #Note: reusing expanded_chrom from above.
+@test Bag.firsts == first.(records)
+@test Bag.lasts == last.(records)
+@test Bag.values == Bedgraph.value.(records)
+
 # Expansion and compression test.
 n, expanded_value = Bedgraph.expand(Bag.records, right_open=true)
 compressed_records = Bedgraph.compress("chr19", n, expanded_value, right_open=true)
