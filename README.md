@@ -15,7 +15,12 @@ This package provides read and write support for [Bedgraph files](https://genome
 > **Note:**  this package does not currently handle bedGraph meta data such as the track definition or browser lines.
 
 ## Installation
-Use Pkg.add("Bedgraph") in Julia to install Bedgraph.jl and its dependencies.
+Install Bedgraph from the Julia REPL:
+```julia
+using Pkg
+add("Bedgraph")
+#Pkg.add("Bedgraph") for julia prior to v 0.7
+```
 
 ## Usage
 
