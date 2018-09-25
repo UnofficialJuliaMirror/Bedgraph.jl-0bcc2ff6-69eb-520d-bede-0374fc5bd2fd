@@ -62,7 +62,7 @@ end
 ```
 
 #### Write a bedGraph file
-Bedgraph.jl currently provides two options. Either vectors or a BedgraphData type can be supplied to its write function.
+Bedgraph.jl currently provides two write functions: one for `Bedgraph.BedgraphHeader`, and one for `Bedgraph.Record`, which also accepts `Vector{Bedgraph.Record}`.
 
 ```julia
 using Bedgraph
@@ -83,7 +83,7 @@ write("data.bedgraph", header, records)
 using Bedgraph
 
 records = [Record("chr19", 49302000, 49302300, -1.0), Record("chr19", 49302300, 49302600, -1.75)]
-header = Bedgraph.BedgraphData(Bedgraph.generateBasicHeader("chr19", records[1].first, records[end].last, bump_forward=false)
+header = Bedgraph.generateBasicHeader("chr19", records[1].first, records[end].last, bump_forward=false)
 
 open(output_file, "w") do io
     write(io, header, records))
