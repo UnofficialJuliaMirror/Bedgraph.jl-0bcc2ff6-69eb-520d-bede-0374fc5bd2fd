@@ -84,6 +84,10 @@ open(Bag.file_headerless, "r") do io
     @test readline(io) == Bag.line1
 end
 
+
+@test read(Bag.file, Bedgraph.BedgraphHeader{Vector{String}}).data == Bag.header
+
+
 open(Bag.file, "r") do io # Note: reading records first to check seek.
     @test Bedgraph.readRecords(io) ==  Bag.records
 	@test Bedgraph._readHeader(io) == Bag.header

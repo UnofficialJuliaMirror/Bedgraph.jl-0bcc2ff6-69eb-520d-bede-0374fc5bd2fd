@@ -31,10 +31,7 @@ add("Bedgraph")
 ```julia
 using Bedgraph
 
-header = Vector{String}()
-open(file, "r") do io
-    header = Bedgraph.readHeader(io)
-end
+header = read(file, BedgraphHeader{Vector{String}})
 ```
 
 #### Read records
