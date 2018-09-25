@@ -9,7 +9,7 @@
 
 > This project will try to follow the [semver](http://semver.org) pro forma.
 
-## Overview
+## Description
 This package provides read and write support for [Bedgraph files](https://genome.ucsc.edu/goldenPath/help/bedgraph.html), as well as other useful utilities.
 
 > **Note:**  this package does not currently handle bedGraph meta data such as the track definition or browser lines.
@@ -49,7 +49,7 @@ open(file, "r") do io
 end
 ```
 
-Alternatively you may want to read records individually.
+Alternatively you may want to read and process records individually.
 ```julia
 open(file, "r") do io
     while !eof(io)
