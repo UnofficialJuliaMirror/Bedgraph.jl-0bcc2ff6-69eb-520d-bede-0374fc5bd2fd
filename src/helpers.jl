@@ -1,10 +1,10 @@
 function _bump(records::Vector{Record}, b::Int) :: Vector{Record}
 
-    new_records = Vector{Record}()
+    new_records = Vector{Record}(undef, length(records))
 
-    for record in records
+    for (i, record) in enumerate(records)
         new_record  = Record(record.chrom, record.first + b, record.last + b, record.value)
-        push!(new_records, new_record)
+        new_records[i] = new_record
     end
 
     return new_records
@@ -34,13 +34,15 @@ end
 
 function Base.convert(::Type{Vector{Record}}, chroms::Vector{String}, firsts::Vector{Int}, lasts::Vector{Int}, values::Vector{T}) where {T<:Real}
 
+    len_chroms = length(chroms)
+
     # Check that arrays are of equal length.
-    length(chroms) == length(firsts) && length(lasts) == length(values) && length(chroms) == length(values) || error("Vectors are of unequal lengths: chroms=$(length(chroms)), firsts=$(length(firsts)), lasts=$(length(lasts)), values=$(length(values))")
+    len_chroms == length(firsts) && length(lasts) == length(values) && len_chroms == length(values) || error("Vectors are of unequal lengths: chroms=$(length(chroms)), firsts=$(length(firsts)), lasts=$(length(lasts)), values=$(length(values))")
 
-    records = Vector{Record}()
+    records = Vector{Record}(undef, len_chroms)
 
-    for (chrom, first, last, value) in zip(chroms, firsts, lasts, values)
-        push!(records,  Record(chrom, first, last, value))
+    for (i, chrom, first, last, value) in zip(1:len_chroms, chroms, firsts, lasts, values)
+        records[i] = Record(chrom, first, last, value)
     end
 
     return records
@@ -81,11 +83,12 @@ function compress(chroms::Vector{String}, n::Vector{Int}, values::Vector{<:Real}
         end
     end
 
-    new_records = Vector{Record}()
+    len = length(ranges)
 
-    for (index, range) in enumerate(ranges)
-        new_record  = Record(compressed_chroms[index], first(range), last(range), compressed_values[index])
-        push!(new_records, new_record)
+    new_records = Vector{Record}(undef, len)
+
+    for (index, chrom, range, value) in zip(1:len, compressed_chroms, ranges, compressed_values)
+        new_records[index]  = Record(chrom, first(range), last(range), value)
     end
 
     return bump_back ? _bumpBack(new_records) : new_records
