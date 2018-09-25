@@ -231,7 +231,7 @@ end #testset Internal Helpers
 
 @testset "Utilities" begin
 
-# Original expansion and compression test.
+# Expansion and compression test.
 (n, expanded_value, expanded_chrom) = Bedgraph.expand(Bag.chroms, Bag.firsts, Bag.lasts, Bag.values)
 records = Bedgraph.compress(expanded_chrom, n, expanded_value)
 @test Bag.chroms == Bedgraph.chrom.(records)
