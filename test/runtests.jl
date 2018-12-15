@@ -38,6 +38,8 @@ const line9 = "chr19 49304400 49304700 1.00"
 const line_other_space = "2R 8225773 8226043 -0.426032509896305"
 const line_other = "2R	8225773	8226043	-0.426032509896305"
 
+const line_other_chrom = "1 3006665 3006673 2"
+
 # Varaiations of line 1.
 const line1_2 = "chr19   49302000    49302300    -1.0" # tab separated.
 const line1_3 = "chr19  49302000     49302300        -1.0" # mix of tabs and spaces.
@@ -157,7 +159,7 @@ end #testset I/O
 @test Bedgraph.isComment(Bag.comment1)
 @test Bedgraph.isBrowser(Bag.browser3)
 
-@test Bedgraph.isLikeRecord("1 2 3 4") == false
+@test Bedgraph.isLikeRecord("1 2 3 4") == true
 @test Bedgraph.isLikeRecord(Bag.parameter_line) == false
 @test Bedgraph.isLikeRecord(Bag.parameter_line_4) == false
 @test Bedgraph.isLikeRecord(Bag.parameter_line_min) == false
@@ -173,6 +175,7 @@ end #testset I/O
 
 @test Bedgraph.isLikeRecord(Bag.line_other_space) == true
 @test Bedgraph.isLikeRecord(Bag.line_other) == true
+@test Bedgraph.isLikeRecord(Bag.line_other_chrom) == true
 
 end #testset Matching
 

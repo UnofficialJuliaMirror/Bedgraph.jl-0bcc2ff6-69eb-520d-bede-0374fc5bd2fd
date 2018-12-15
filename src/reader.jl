@@ -1,6 +1,6 @@
 # Check if the record data is in the four column BED format.
 function isLikeRecord(line::String) :: Bool
-    return  occursin(r"^\s*\S*(?=[A-Za-z])\S*\s+(\d+)\s+(\d+)\s+(\S*\d)\s*$", line) # Note: is like a record.
+    return  occursin(r"^\s*\S*(?=[A-Za-z0-9])\S*\s+(\d+)\s+(\d+)\s+(\S*\d)\s*$", line) # Note: is like a record.
 end
 
 function isBrowser(line::String) :: Bool
