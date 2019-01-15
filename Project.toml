@@ -1,7 +1,7 @@
 name = "Bedgraph"
 uuid = "38184a12-1873-11e9-1f6b-531a9034de6e"
 authors = ["Ciarán O'Mara <Ciaran.OMara@utas.edu.au>"]
-version = "1.0.2"
+version = "1.0.3"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
