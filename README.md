@@ -76,6 +76,9 @@ const lasts = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304
 const values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
 records = convert(Vector{Bedgraph.Record}, chroms, firsts, lasts, values)
+
+sort!(records)
+
 header = Bedgraph.generateBasicHeader(records)
 
 write("data.bedgraph", header, records)
@@ -93,7 +96,7 @@ open(output_file, "w") do io
 end
 
 ```
-### Expansion and compression of data
+### Compression and decompression of data
 
 #### Compress data values
 Compress data to chromosome coordinates of the zero-based, half-open format.
@@ -103,9 +106,9 @@ using Bedgraph
 
 chrom "chr1"
 n = 49302000:49304700
-expanded_values = [-1.0, -1.0, -1.0, ..., 1.00, 1.00, 1.00]
+decompressed_values = [-1.0, -1.0, -1.0, ..., 1.00, 1.00, 1.00]
 
-compressed_records = Bedgraph.compress(chrom, n, expanded_values)
+compressed_records = Bedgraph.compress(chrom, n, decompressed_values)
 ```
 
 ```julia
@@ -113,12 +116,13 @@ using Bedgraph
 
 const records = [Record("chr19", 49302000, 49302300, -1.0), Record("chr19", 49302300, 49302600, -1.75)]
 
-compressed_records = Bedgraph.compress("chr19", n, expanded_value)
+compressed_records = Bedgraph.compress("chr19", n, decompressed_value)
 ```
 
-#### Expand record data
-Expand chromosome coordinates from the zero-based, half-open format.
+#### Decompress record data
+Decompress chromosome coordinates from the zero-based, half-open format.
 > **Note:**  please be aware of the order of returned items.
+
 ```julia
 using Bedgraph
 
@@ -126,7 +130,7 @@ const firsts = [49302000, 49302300, 49302600, 49302900, 49303200, 49303500, 4930
 const lasts = [49302300, 49302600, 49302900, 49303200, 49303500, 49303800, 49304100, 49304400, 49304700]
 const values = [-1.0, -0.75, -0.50, -0.25, 0.0, 0.25, 0.50, 0.75, 1.00]
 
-(n, expanded_values, expanded_chroms) = Bedgraph.expand(chroms, firsts, lasts, values)
+(n, decompressed_values, decompressed_chroms) = Bedgraph.expand(chroms, firsts, lasts, values)
 ```
 
 ```julia
@@ -135,5 +139,5 @@ using Bedgraph
 
 const records = [Record("chr19", 49302000, 49302300, -1.0), Record("chr19", 49302300, 49302600, -1.75)]
 
-n, expanded_values, expanded_chroms = Bedgraph.expand(records)
+n, decompressed_values, decompressed_chroms = Bedgraph.expand(records)
 ```
