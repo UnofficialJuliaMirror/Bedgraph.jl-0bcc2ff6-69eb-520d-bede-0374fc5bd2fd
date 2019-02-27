@@ -13,12 +13,12 @@ end
 
 
 function seekNextRecord(io::IO) :: Nothing
-    seekstart(io)
 
     pos = position(io)
+    initial = pos == 0 ? -1 : pos # Note: Allows for the fist line of headerless bedGraph file to be read.
     line = ""
 
-    while !eof(io) && !isLikeRecord(line)
+    while !eof(io) && (!isLikeRecord(line) || pos == initial)
         pos = position(io)
         line = readline(io)
     end
@@ -57,6 +57,7 @@ function readRecord(io::IO) :: Union{Nothing, Record}
 end
 
 function readRecords(io::IO) :: Vector{Record}
+    seekstart(io)
     seekNextRecord(io)
 
     records = Vector{Record}()
