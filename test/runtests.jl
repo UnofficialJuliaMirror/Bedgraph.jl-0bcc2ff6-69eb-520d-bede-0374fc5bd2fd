@@ -81,9 +81,17 @@ end
 
 # Check things for headerless Bag.files.
 open(Bag.file_headerless, "r") do io
+
+	# Check that the first record of a headerless bedGraph file can be sought.
     Bedgraph.seekNextRecord(io)
     @test position(io) == 0
-    @test readline(io) == Bag.line1
+    @test readline(io) == Bag.line1 # IO position is at the start of line 2.
+
+	# Check behaviour of consecutive calls to Bedgraph.seekNextRecord(io).
+	Bedgraph.seekNextRecord(io) # Skip to start of line 3.
+	Bedgraph.seekNextRecord(io) # Skip to start of line 4.
+	@test readline(io) == Bag.line4
+
 end
 
 
