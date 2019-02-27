@@ -201,6 +201,23 @@ end #testset Matching
 end #testset Parsing
 
 
+@testset "Sorting" begin
+
+# Testing isless function.
+@test isless(Record(Bag.line1), Record(Bag.line2)) == true
+@test isless(Record(Bag.line2), Record(Bag.line1)) == false
+
+unordered = Bag.records[[9,4,5,6,8,7,1,3,2]]
+
+@test Bag.records != unordered
+@test Bag.records == sort(unordered)
+
+# Testing sort by concept.
+@test Bag.records == sort(unordered, by=x->[x.chrom, x.first, x.last])
+
+end #testset Sorting
+
+
 @testset "Conversion" begin
 
 @test_throws ErrorException Bedgraph._convertCells([Bag.cells1; "extra_cell"]) == Bag.cells1

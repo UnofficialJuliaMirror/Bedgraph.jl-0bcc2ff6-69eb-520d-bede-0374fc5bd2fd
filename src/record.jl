@@ -14,6 +14,20 @@ function Base.:(==)(a::Record, b::Record)
            a.value == b.value
 end
 
+function Base.isless(a::Record, b::Record, chrom_isless::Function=isless) :: Bool
+    if a.chrom != b.chrom
+        return chrom_isless(a.chrom, b.chrom) :: Bool
+    elseif a.first != b.first
+        return a.first < b.first
+    elseif a.last != b.last
+        return a.last < b.last
+    elseif a.value != b.value
+        return a.value < b.value
+    else
+        return false
+    end
+end
+
 function Record(data::Vector{String})
     return convert(Record, data)
 end

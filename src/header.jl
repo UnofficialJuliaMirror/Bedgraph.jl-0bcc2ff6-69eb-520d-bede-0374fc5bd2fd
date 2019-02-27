@@ -12,7 +12,7 @@ function Base.convert(::Type{String}, header::BedgraphHeader{Vector{String}}) ::
     return str
 end
 
-function generateBasicHeader(records::Vector{Record}; bump_forward=true) :: BedgraphHeader{Vector{String}}
+function generateBasicHeader(records::Vector{Record}; bump_forward=true) :: BedgraphHeader{Vector{String}} #Note: we assume that records are sorted by chrom and left position.
 
     chrom = records[1].chrom
 
